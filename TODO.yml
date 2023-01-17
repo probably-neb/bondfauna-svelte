@@ -1,0 +1,14 @@
+TODO:
+  - Don't allow guesses that are not words
+  - Color Schemes
+  - Analyzer
+  - words that aren't 5 long
+  - sharing of results (like in regular wordle)
+  - Server side components? (Will require moving my website off of github pages):
+    - sql database with:
+      - precomputed analyzer runs for all words
+      - user info?
+    - better storage of words:
+      - client gets random chunk and chooses word from it?
+      - client gets (single) answer from server each time
+
