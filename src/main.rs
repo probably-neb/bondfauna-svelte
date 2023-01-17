@@ -3,12 +3,12 @@ use yew::prelude::*;
 mod key;
 mod letters;
 mod game;
-use game::Game;
+mod driver;
 
 #[function_component]
 pub fn App() -> Html {
     html! {
-        <Game />
+        <game::GameInterface />
     }
 }
 
