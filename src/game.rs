@@ -49,14 +49,143 @@ pub fn Row(props: &RowProps) -> Html {
     )
 }
 
+// #[derive(Properties, PartialEq)]
+// pub struct InnerBoardProps {
+//     parent_size: (u32,u32)
+// }
+
 #[function_component]
-pub fn Board() -> Html {
+pub fn InnerBoard(/* props: &InnerBoardProps */) -> Html {
     let rows = (0..6).map(|row| html! { <Row {row}/> });
+    let div_ref = use_node_ref();
+    let get_updated_dimensions = {
+        let div_ref = div_ref.clone();
+        move || -> (i32, i32) {
+            // r = (n = Math.floor(e.clientHeight * (5 / 6)), i = t, Math.min(Math.max(n, i), 350));
+            //             var n,
+            //             i;
+            // const l = 6 * Math.floor(r / 5);
+
+            let h: Option<i32> = div_ref
+                .get()
+                .and_then(|this| this.parent_element())
+                .map(|parent| parent.client_height());
+
+            // log::info!("height {:?}", h);
+            let h: i32 = match h {
+                Some(h) => h,
+                None => return (300, 360),
+            };
+            let n: i32 = (h as f32 * (5. / 6.)).floor() as i32;
+            // let i = 0;
+            let i = 300;
+            // can make this return some and use ? instead of unwrap above
+            let r = i32::min(i32::max(n, i), 350);
+            let l = 6 * (r as f32 / 5.).floor() as i32;
+            log::info!("resized: r: {r} l: {l} n: {n} i: {i} h: {h}");
+            (r, l)
+        }
+    };
+
+    let dimensions = use_state(get_updated_dimensions.clone());
+
+    // let parent_size = use_memo(
+    let resize = Callback::from({
+        let dimensions = dimensions.clone();
+        move |(x, y)| dimensions.set((x, y))
+    });
+
+    // let onload = Callback::from({
+    //     let resize = resize.clone();
+    //     move |e| resize.emit(e)
+    // });
+    // let _dimensions = dimensions.clone();
+
+    let _div_ref = div_ref.clone();
+
+    use_effect(|| {
+        let handler = gloo::events::EventListener::new(&gloo::utils::window(), "resize", {
+            move |event| {
+                // r = (n = Math.floor(e.clientHeight * (5 / 6)), i = t, Math.min(Math.max(n, i), 350));
+                //             var n,
+                //             i;
+                // const l = 6 * Math.floor(r / 5);
+
+                let h = gloo::utils::document()
+                    .get_element_by_id("board-outer")
+                    .map(|parent| parent.client_height());
+                // let h: Option<i32> = div_ref.get()
+                //     .and_then(|this| this.parent_element())
+                //     .map(|parent| parent.client_height());
+
+                // log::info!("height {:?}", h);
+                let (x, y): (i32, i32) = match h {
+                    Some(h) => {
+                        let n: i32 = (h as f32 * (5. / 6.)).floor() as i32;
+                        // let i = 0;
+                        let i = 300;
+                        // can make this return some and use ? instead of unwrap above
+                        let r = i32::min(i32::max(n, i), 350);
+                        let l = 6 * (r as f32 / 5.).floor() as i32;
+                        log::info!("resized: r: {r} l: {l} n: {n} i: {i} h: {h}");
+                        (r, l)
+                    }
+                    None => (300, 360),
+                };
+                resize.emit((x, y));
+                // resize.emit(event.clone());
+            }
+        });
+        || {
+            drop(handler);
+        }
+    });
+
+    let dimensions = dimensions.clone();
+    let (r, l) = (dimensions.0, dimensions.1);
+    let style = format!("width: {r}px; height: {l}px;");
+    log::info!("{}",style);
     html!(
-        <div class="board-outer">
-            <div class="board-inner" style="width: 60%; height: 60%;">
+            <div class="board-inner" ref={_div_ref} {style}>
                 {rows.collect::<Html>()}
             </div>
+    )
+}
+
+#[function_component]
+pub fn Board() -> Html {
+    let div_ref = use_node_ref();
+    let get_updated_dimensions = {
+        let div_ref = div_ref.clone();
+        move || -> (i32, i32) {
+            // r = (n = Math.floor(e.clientHeight * (5 / 6)), i = t, Math.min(Math.max(n, i), 350));
+            //             var n,
+            //             i;
+            // const l = 6 * Math.floor(r / 5);
+
+            let h: Option<i32> = div_ref
+                .get()
+                .and_then(|this| this.parent_element())
+                .map(|parent| parent.client_height());
+
+            // log::info!("height {:?}", h);
+            let h: i32 = match h {
+                Some(h) => h,
+                None => return (300, 360),
+            };
+            let n: i32 = (h as f32 * (5. / 6.)).floor() as i32;
+            // let i = 0;
+            let i = 300;
+            // can make this return some and use ? instead of unwrap above
+            let r = i32::min(i32::max(n, i), 350);
+            let l = 6 * (r as f32 / 5.).floor() as i32;
+            log::info!("resized: r: {r} l: {l} n: {n} i: {i} h: {h}");
+            (r, l)
+        }
+    };
+    html!(
+        <div class="board-outer" id="board-container" ref={div_ref}>
+            <InnerBoard />
         </div>
     )
 }
@@ -148,6 +277,13 @@ impl Reducible for GameState {
 type GameContext = UseReducerHandle<GameState>;
 
 #[function_component]
+pub fn Header()-> Html {
+    html!{
+        <div class="appHeader"><div class="appHeader-title">{"Jordle"}</div></div>
+    }
+}
+
+#[function_component]
 pub fn GameInterface() -> Html {
     // NOTE: use_memo takes dependencies:
     // set dependency on game number to calculate
@@ -171,12 +307,21 @@ pub fn GameInterface() -> Html {
         }
     });
 
+    // let style = "height: 100%;";
+    // let style = "height: calc(100% - 100px);";
+    let style = "height: 90%;";
+    // let style = "height: calc(100% - 210px);";
     html! {
-        <div class="game">
-            <ContextProvider<GameContext> context={board_state}>
-                <Board />
-                <crate::key::Keyboard {onclick}/>
-            </ContextProvider<GameContext>>
+        <div class="game-outer-container">
+            <Header />
+            <div class="game-container" {style}>
+                <div class="game">
+                    <ContextProvider<GameContext> context={board_state}>
+                        <Board />
+                        <crate::key::Keyboard {onclick}/>
+                    </ContextProvider<GameContext>>
+                </div>
+            </div>
         </div>
     }
 }

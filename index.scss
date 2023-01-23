@@ -1,18 +1,145 @@
 :root {
-    --bg-default: black;
-    --highlight-color-default: gray;
-    --text-color-default: white;
-    --key-bg-default: silver;
-    --guess-correct: seagreen;
-    --guess-misplaced: gold;
-    --guess-wrong: darkgrey;
-    --guess-fg: white
+  --bg-default: black;
+  --highlight-color-default: gray;
+  --text-color-default: white;
+  --key-bg-default: silver;
+  --guess-correct: seagreen;
+  --guess-misplaced: gold;
+  --guess-wrong: darkgrey;
+  --guess-fg: white;
+  --game-max-width: 500px;
+  --header-height: 40px;
+  --header-padding-x: 16px;
+  font-size: 16px;
 }
 
+/* Responsive styles */
+@media (min-width: 415px) {
+  :root {
+    --header-height: 65px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --header-padding-x: 24px;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-padding-x: 20px;
+  }
+}
+
+html {
+    height: 100%;
+}
 body {
-    background-color: var(--bg-default);
+  background-color: var(--bg-default);
+  overflow-y: unset;
+  padding: 0px;
 }
 
+.appHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  padding: 0px var(--header-padding-x);
+  height: var(--header-height);
+  color: var(--text-color-default);
+  border-bottom: 1px solid var(--highlight-color-default);
+
+  button:focus-visible {
+    outline: 2px solid var(--highlight-color-default);
+  }
+
+  button.icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+
+  button.icon:last-child {
+    padding-right: 0;
+  }
+}
+
+.appHeader-title {
+    flex-grow: 2;
+    // font-family: 'nyt-karnakcondensed';
+    color: var(--text-color-default);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.01em;
+    // text-align: left;
+    text-align: center;
+    padding-left: 10px;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    position: relative;
+}
+
+.menuLeft {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.menuRight {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#navButton {
+  padding-top: 2px;
+  padding-left: 0px;
+  padding-right: 13px;
+}
+
+@media (min-width: 1024px) {
+  .appHeader {
+    .title {
+      text-align: center;
+      font-size: 36px;
+    }
+
+    button.icon {
+      padding: 0 6px;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .appHeader {
+    .title {
+      text-align: center;
+      font-size: 32px;
+    }
+
+    .menuLeft,
+    .menuRight {
+      // these two must be exactly the same width for the title to be centered
+      width: 120px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .appHeader .title {
+      font-size: 36px;
+    }
+  }
+
+  #navButton {
+    padding-top: 2px;
+    padding-left: 0px;
+  }
+}
 .tile {
   width: 100%;
   display: inline-flex;
@@ -29,8 +156,9 @@ body {
   user-select: none;
   color: var(--text-color-default);
   // background-color: yellow;
-  border: 1px solid var(--highlight-color-default);
+  border: 2px solid var(--highlight-color-default);
 }
+
 .tile::before {
   content: "";
   display: inline-block;
@@ -54,6 +182,7 @@ $cols: 5;
   overflow-x: hidden;
   overflow-y: hidden;
 }
+
 .board-inner {
   display: grid;
   grid-template-rows: repeat(6, 1fr);
@@ -61,13 +190,27 @@ $cols: 5;
   padding: 10px;
   box-sizing: border-box;
 }
+
+.game-outer-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.game-container {
+    position: relative;
+}
+
 .game {
   width: 100%;
   max-width: var(--game-max-width);
   margin: 0 auto;
-  height: 100%; // calc(100% - var(--header-height));
+  height: calc(100% - var(--header-height));
   display: flex;
   flex-direction: column;
+  flex-flow: column;
 }
 
 $keyboard-height: 200px;
@@ -81,6 +224,7 @@ $keyboard-height: 200px;
   align-items: center;
   justify-content: center;
 }
+
 .keyboard-row {
   display: flex;
   width: 100%;
@@ -89,6 +233,7 @@ $keyboard-height: 200px;
   // justify-content: center;
   touch-action: manipulation;
 }
+
 .key {
   font-family: inherit;
   font-weight: bold;
@@ -108,20 +253,23 @@ $keyboard-height: 200px;
   justify-content: center;
   align-items: center;
   text-transform: uppercase;
-  -webkit-tap-highlight-color: rgba(0,0,0,.3);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.3);
 }
+
 .tile[data-guess="Correct"],
 .key[data-guess="Correct"] {
-    background-color: var(--guess-correct);
-    color: var(--guess-fg);
+  background-color: var(--guess-correct);
+  color: var(--guess-fg);
 }
+
 .tile[data-guess="Wrong"],
 .key[data-guess="Wrong"] {
-    background-color: var(--guess-wrong);
-    color: var(--guess-fg);
+  background-color: var(--guess-wrong);
+  color: var(--guess-fg);
 }
+
 .tile[data-guess="Misplaced"],
 .key[data-guess="Misplaced"] {
-    background-color: var(--guess-misplaced);
-    color: var(--guess-fg);
+  background-color: var(--guess-misplaced);
+  color: var(--guess-fg);
 }
