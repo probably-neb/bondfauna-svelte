@@ -1,6 +1,8 @@
 use std::fmt;
 
 use crate::letters::Chr;
+use crate::game::{GameContext, correctness_to_string};
+use roget::Correctness;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -11,16 +13,23 @@ pub struct KeyProps {
 
 #[function_component]
 fn Key(props: &KeyProps) -> Html {
+
     let code = props.code;
+
+    let state = use_state_eq(| | None);
+    let ctx = use_context::<GameContext>().unwrap();
+    state.set(ctx.chars[code.to_usize()]);
+
     let onclick = props.onclick.reform({
         move |_| code
     });
     let is_spacer = matches!(code, Chr::SPACER);
+    let data_guess = correctness_to_string(*state);
     html! {
         if is_spacer {
             <div class="key" data-type="spacer"></div>
         } else {
-            <button {onclick} class="key" data-type={code.get_type()}>{code}</button>
+            <button {onclick} class="key" data-type={code.get_type()} data-guess={data_guess} >{code}</button>
         }
     }
 }

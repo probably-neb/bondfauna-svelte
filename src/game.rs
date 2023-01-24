@@ -17,6 +17,14 @@ pub struct TileProps {
     row: usize,
 }
 
+pub fn correctness_to_string(state: Option<Correctness>) -> String {
+     if let Some(correctness) = state {
+        format!("{:?}", correctness)
+    } else {
+        "empty".to_string()
+    }
+}
+
 #[function_component]
 pub fn Tile(props: &TileProps) -> Html {
     let state = use_state_eq(TileState::default);
@@ -25,11 +33,7 @@ pub fn Tile(props: &TileProps) -> Html {
     // let pos = format!("{},{}", props.col, props.row);
     let disp = state.current.map(|c| c.to_char()).unwrap_or(' ');
     // let disp = "_";
-    let data_guess = if let Some(correctness) = state.goodness {
-        format!("{:?}", correctness)
-    } else {
-        "empty".to_string()
-    };
+    let data_guess = correctness_to_string(state.goodness);
     html!(
         <div class="tile" data-guess={data_guess}>{disp}</div>
     )
@@ -102,52 +106,52 @@ pub fn InnerBoard(/* props: &InnerBoardProps */) -> Html {
     // });
     // let _dimensions = dimensions.clone();
 
-    let _div_ref = div_ref.clone();
+    {
+        let div_ref = div_ref.clone();
+        use_effect(|| {
+            let handler = gloo::events::EventListener::new(&gloo::utils::window(), "resize", {
+                move |_event| {
+                    // r = (n = Math.floor(e.clientHeight * (5 / 6)), i = t, Math.min(Math.max(n, i), 350));
+                    //             var n,
+                    //             i;
+                    // const l = 6 * Math.floor(r / 5);
 
-    use_effect(|| {
-        let handler = gloo::events::EventListener::new(&gloo::utils::window(), "resize", {
-            move |event| {
-                // r = (n = Math.floor(e.clientHeight * (5 / 6)), i = t, Math.min(Math.max(n, i), 350));
-                //             var n,
-                //             i;
-                // const l = 6 * Math.floor(r / 5);
+                    let h = gloo::utils::document()
+                        .get_element_by_id("board-outer")
+                        .map(|parent| parent.client_height());
+                    // let h: Option<i32> = div_ref.get()
+                    //     .and_then(|this| this.parent_element())
+                    //     .map(|parent| parent.client_height());
 
-                let h = gloo::utils::document()
-                    .get_element_by_id("board-outer")
-                    .map(|parent| parent.client_height());
-                // let h: Option<i32> = div_ref.get()
-                //     .and_then(|this| this.parent_element())
-                //     .map(|parent| parent.client_height());
-
-                // log::info!("height {:?}", h);
-                let (x, y): (i32, i32) = match h {
-                    Some(h) => {
-                        let n: i32 = (h as f32 * (5. / 6.)).floor() as i32;
-                        // let i = 0;
-                        let i = 300;
-                        // can make this return some and use ? instead of unwrap above
-                        let r = i32::min(i32::max(n, i), 350);
-                        let l = 6 * (r as f32 / 5.).floor() as i32;
-                        log::info!("resized: r: {r} l: {l} n: {n} i: {i} h: {h}");
-                        (r, l)
-                    }
-                    None => (300, 360),
-                };
-                resize.emit((x, y));
-                // resize.emit(event.clone());
+                    // log::info!("height {:?}", h);
+                    let (x, y): (i32, i32) = match h {
+                        Some(h) => {
+                            let n: i32 = (h as f32 * (5. / 6.)).floor() as i32;
+                            // let i = 0;
+                            let i = 300;
+                            // can make this return some and use ? instead of unwrap above
+                            let r = i32::min(i32::max(n, i), 350);
+                            let l = 6 * (r as f32 / 5.).floor() as i32;
+                            log::info!("resized: r: {r} l: {l} n: {n} i: {i} h: {h}");
+                            (r, l)
+                        }
+                        None => (300, 360),
+                    };
+                    resize.emit((x, y));
+                    // resize.emit(event.clone());
+                }
+            });
+            || {
+                drop(handler);
             }
         });
-        || {
-            drop(handler);
-        }
-    });
+    }
 
-    let dimensions = dimensions.clone();
     let (r, l) = (dimensions.0, dimensions.1);
     let style = format!("width: {r}px; height: {l}px;");
     log::info!("{}", style);
     html!(
-            <div class="board-inner" ref={_div_ref} {style}>
+            <div class="board-inner" ref={div_ref} {style}>
                 {rows.collect::<Html>()}
             </div>
     )
@@ -166,10 +170,11 @@ type BoardState = [[TileState; 5]; 6];
 
 // TODO: Move gamestate to it's own module
 #[derive(Default, Copy, Clone, PartialEq)]
-struct GameState {
+pub struct GameState {
     board_state: BoardState,
     cur_pos: (usize, usize),
     answer: &'static str,
+    pub chars: [Option<Correctness>; 30]
 }
 
 impl GameState {
@@ -182,18 +187,32 @@ impl GameState {
     fn current_row_mut(&mut self) -> &mut [TileState; 5] {
         &mut self.board_state[self.cur_pos.1]
     }
-    fn evaluate_guess(&self) -> [Correctness; 5] {
-        let guess_chars = self
+
+    fn current_guess(&self) -> [Chr; 5] {
+        self
             .current_row()
-            .map(|state| state.current.expect("Guess has Chr").to_char());
-        let guess = String::from_iter(guess_chars);
-        let correctness = Correctness::compute(self.answer, &guess);
-        log::info!("Computed Correctness: {:?}", correctness);
-        correctness
+            .map(|state| state.current.expect("Guess has Chr"))
+    } 
+
+    fn update_chars(&mut self,guess_chars: [Chr; 5], correctness: [Correctness; 5]) {
+        for (ch,goodness) in zip(guess_chars, correctness) {
+            self.chars[ch.to_usize()].replace(goodness);
+        }
     }
+
+    fn evaluate_guess(&self) -> ([Chr; 5], [Correctness; 5]) {
+        let guess_chars = self.current_guess();
+        let guess = String::from_iter(guess_chars.map(Chr::to_char));
+        let correctness = Correctness::compute(self.answer, &guess);
+
+
+        log::info!("Computed Correctness: {:?}", correctness);
+        (guess_chars, correctness)
+    }
+
     fn update_tile_states_from_guess(&mut self, guess: [Correctness; 5]) {
-        for (correctness, mut tile_state) in zip(guess, self.current_row_mut()) {
-            tile_state.goodness = Some(correctness);
+        for (correctness, tile_state) in zip(guess, self.current_row_mut()) {
+            tile_state.goodness.replace(correctness);
         }
     }
 
@@ -204,7 +223,11 @@ impl GameState {
         match c {
             Chr::ENTER => {
                 if self.cur_pos.0 == 5 {
-                    self.update_tile_states_from_guess(self.evaluate_guess());
+                    let (guess_chars, correctness) = self.evaluate_guess();
+
+                    self.update_chars(guess_chars, correctness);
+                    self.update_tile_states_from_guess(correctness);
+
                     self.cur_pos.0 = 0;
                     self.cur_pos.1 += 1;
                 }
@@ -246,7 +269,7 @@ impl Reducible for GameState {
     }
 }
 
-type GameContext = UseReducerHandle<GameState>;
+pub(crate) type GameContext = UseReducerHandle<GameState>;
 
 #[function_component]
 pub fn Header() -> Html {
@@ -280,7 +303,7 @@ pub fn GameInterface() -> Html {
 
     {
         let board_state = board_state.clone();
-        use_effect(move | | {
+        use_effect(move || {
             let handler = gloo::events::EventListener::new(&gloo::utils::document(), "keydown", {
                 move |event| {
                     let event = event.dyn_ref::<web_sys::KeyboardEvent>().unwrap_throw();
@@ -293,7 +316,7 @@ pub fn GameInterface() -> Html {
                 }
             });
 
-            | | drop(handler)
+            || drop(handler)
         });
     }
 
