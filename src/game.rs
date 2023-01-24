@@ -1,4 +1,5 @@
 use std::{iter::zip, rc::Rc};
+use wasm_bindgen::{JsCast, UnwrapThrowExt};
 
 use crate::letters::Chr;
 use roget::Correctness;
@@ -144,7 +145,7 @@ pub fn InnerBoard(/* props: &InnerBoardProps */) -> Html {
     let dimensions = dimensions.clone();
     let (r, l) = (dimensions.0, dimensions.1);
     let style = format!("width: {r}px; height: {l}px;");
-    log::info!("{}",style);
+    log::info!("{}", style);
     html!(
             <div class="board-inner" ref={_div_ref} {style}>
                 {rows.collect::<Html>()}
@@ -154,37 +155,8 @@ pub fn InnerBoard(/* props: &InnerBoardProps */) -> Html {
 
 #[function_component]
 pub fn Board() -> Html {
-    let div_ref = use_node_ref();
-    let get_updated_dimensions = {
-        let div_ref = div_ref.clone();
-        move || -> (i32, i32) {
-            // r = (n = Math.floor(e.clientHeight * (5 / 6)), i = t, Math.min(Math.max(n, i), 350));
-            //             var n,
-            //             i;
-            // const l = 6 * Math.floor(r / 5);
-
-            let h: Option<i32> = div_ref
-                .get()
-                .and_then(|this| this.parent_element())
-                .map(|parent| parent.client_height());
-
-            // log::info!("height {:?}", h);
-            let h: i32 = match h {
-                Some(h) => h,
-                None => return (300, 360),
-            };
-            let n: i32 = (h as f32 * (5. / 6.)).floor() as i32;
-            // let i = 0;
-            let i = 300;
-            // can make this return some and use ? instead of unwrap above
-            let r = i32::min(i32::max(n, i), 350);
-            let l = 6 * (r as f32 / 5.).floor() as i32;
-            log::info!("resized: r: {r} l: {l} n: {n} i: {i} h: {h}");
-            (r, l)
-        }
-    };
     html!(
-        <div class="board-outer" id="board-container" ref={div_ref}>
+        <div class="board-outer" id="board-container">
             <InnerBoard />
         </div>
     )
@@ -277,8 +249,8 @@ impl Reducible for GameState {
 type GameContext = UseReducerHandle<GameState>;
 
 #[function_component]
-pub fn Header()-> Html {
-    html!{
+pub fn Header() -> Html {
+    html! {
         <div class="appHeader"><div class="appHeader-title">{"Jordle"}</div></div>
     }
 }
@@ -302,17 +274,32 @@ pub fn GameInterface() -> Html {
     let onclick = Callback::from({
         let board_state = board_state.clone();
         move |code| {
-            // log::info!("pressed key: {}", code);
             board_state.dispatch(code);
         }
     });
 
-    // let style = "height: 100%;";
-    // let style = "height: calc(100% - 100px);";
+    {
+        let board_state = board_state.clone();
+        use_effect(move | | {
+            let handler = gloo::events::EventListener::new(&gloo::utils::document(), "keydown", {
+                move |event| {
+                    let event = event.dyn_ref::<web_sys::KeyboardEvent>().unwrap_throw();
+                    let key: String = event.key();
+                    let chr = Chr::from_str(&key);
+
+                    if let Some(chr) = chr {
+                        board_state.dispatch(chr)
+                    }
+                }
+            });
+
+            | | drop(handler)
+        });
+    }
+
     let style = "height: 90%;";
-    // let style = "height: calc(100% - 210px);";
     html! {
-        <div class="game-outer-container">
+        <div class="game-outer-container" >
             <Header />
             <div class="game-container" {style}>
                 <div class="game">
