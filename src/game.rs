@@ -27,7 +27,7 @@ pub fn Tile(props: &TileProps) -> Html {
     let data_guess = if let Some(correctness) = state.goodness {
         format!("{:?}", correctness)
     } else {
-        String::new()
+        "empty".to_string()
     };
     html!(
         <div class="tile" data-guess={data_guess}>{disp}</div>

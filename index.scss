@@ -156,7 +156,6 @@ body {
   user-select: none;
   color: var(--text-color-default);
   // background-color: yellow;
-  border: 2px solid var(--highlight-color-default);
 }
 
 .tile::before {
@@ -254,6 +253,10 @@ $keyboard-height: 200px;
   align-items: center;
   text-transform: uppercase;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.3);
+}
+
+.tile[data-guess="empty"] {
+  border: 2px solid var(--highlight-color-default);
 }
 
 .tile[data-guess="Correct"],
