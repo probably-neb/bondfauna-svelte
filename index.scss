@@ -67,6 +67,15 @@ body {
   }
 }
 
+.reset-icon {
+    object-fit: contain;
+    height: 24px;
+    height: 24px;
+    -webkit-filter: invert(100%);
+    filter: invert(100%);
+    // viewBox: 4 4 24 24;
+}
+
 .appHeader-title {
     flex-grow: 2;
     // font-family: 'nyt-karnakcondensed';
@@ -140,6 +149,7 @@ body {
     padding-left: 0px;
   }
 }
+
 .tile {
   width: 100%;
   display: inline-flex;

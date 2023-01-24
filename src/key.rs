@@ -1,14 +1,14 @@
 use std::fmt;
 
 use crate::letters::Chr;
-use crate::game::{GameContext, correctness_to_string};
+use crate::game::{GameContext, correctness_to_string, GameAction};
 use roget::Correctness;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct KeyProps {
     code: Chr,
-    onclick: Callback<Chr>,
+    onclick: Callback<GameAction>,
 }
 
 #[function_component]
@@ -21,7 +21,7 @@ fn Key(props: &KeyProps) -> Html {
     state.set(ctx.chars[code.to_usize()]);
 
     let onclick = props.onclick.reform({
-        move |_| code
+        move |_| GameAction::KeyPress(code)
     });
     let is_spacer = matches!(code, Chr::SPACER);
     let data_guess = correctness_to_string(*state);
@@ -64,5 +64,5 @@ pub fn Keyboard(props: &KeyboardProps) -> Html {
 
 #[derive(Properties, PartialEq)]
 pub struct KeyboardProps {
-    pub onclick: Callback<Chr>,
+    pub onclick: Callback<GameAction>,
 }
