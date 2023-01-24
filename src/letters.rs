@@ -28,6 +28,7 @@ pub enum Chr {
     N,
     M,
     DEL,
+    SPACER,
 }
 
 use Chr::*;
@@ -63,6 +64,7 @@ impl Chr {
             M => 'm',
             ENTER => '+',
             DEL => '-',
+            SPACER => '_'
         }
     }
 
@@ -131,6 +133,15 @@ impl Chr {
             M => "m",
             ENTER => "ENTER",
             DEL => "DEL",
+            SPACER => "SPACER",
+        }
+    }
+
+    pub fn get_type(self) -> &'static str {
+        match self {
+            ENTER | DEL => "wide",
+            SPACER => "spacer",
+            _ => "normal",
         }
     }
 
@@ -147,7 +158,7 @@ impl Chr {
 }
 
 const ROW1: [Chr; 10] = [Q, W, E, R, T, Y, U, I, O, P];
-const ROW2: [Chr; 9] = [A, S, D, F, G, H, J, K, L];
+const ROW2: [Chr; 11] = [SPACER, A, S, D, F, G, H, J, K, L, SPACER];
 const ROW3: [Chr; 9] = [ENTER, Z, X, C, V, B, N, M, DEL];
 
 impl std::fmt::Display for Chr {

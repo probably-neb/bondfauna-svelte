@@ -15,8 +15,13 @@ fn Key(props: &KeyProps) -> Html {
     let onclick = props.onclick.reform({
         move |_| code
     });
+    let is_spacer = matches!(code, Chr::SPACER);
     html! {
-        <button {onclick} class="key">{code}</button>
+        if is_spacer {
+            <div class="key" data-type="spacer"></div>
+        } else {
+            <button {onclick} class="key" data-type={code.get_type()}>{code}</button>
+        }
     }
 }
 

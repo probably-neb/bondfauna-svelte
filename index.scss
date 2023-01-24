@@ -233,6 +233,7 @@ $keyboard-height: 200px;
   touch-action: manipulation;
 }
 
+
 .key {
   font-family: inherit;
   font-weight: bold;
@@ -247,12 +248,25 @@ $keyboard-height: 200px;
   user-select: none;
   background-color: var(--key-bg-default);
   color: var(--key-text-color);
-  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   text-transform: uppercase;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.3);
+}
+
+.key[data-type="normal"] {
+    flex: 1.0;
+}
+
+.key[data-type="spacer"] {
+    flex: 0.5;
+    background-color: transparent;
+    color: transparent;
+}
+
+.key[data-type="wide"] {
+    flex: 1.5;
 }
 
 .tile[data-guess="empty"] {
