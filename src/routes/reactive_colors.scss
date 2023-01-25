@@ -1,0 +1,21 @@
+.tile[data-guess="empty"] {
+  border: 2px solid var(--highlight-color-default);
+}
+
+.tile[data-guess="Correct"],
+.key[data-guess="Correct"] {
+  background-color: var(--guess-correct);
+  color: var(--guess-fg);
+}
+
+.tile[data-guess="Wrong"],
+.key[data-guess="Wrong"] {
+  background-color: var(--guess-wrong);
+  color: var(--guess-fg);
+}
+
+.tile[data-guess="Misplaced"],
+.key[data-guess="Misplaced"] {
+  background-color: var(--guess-misplaced);
+  color: var(--guess-fg);
+}
