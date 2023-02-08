@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { game_state } from "./driver"
+
 	export let onclick: (char: String) => void | undefined = null,
 		code: string = '',
         kind: string;
@@ -8,7 +10,7 @@
 </script>
 
 {#if kind != "spacer"}
-<button on:click={clicked} class="key" data-kind={kind}>{code}</button>
+<button on:click={game_state.send_key(code)} class="key" data-kind={kind}>{code}</button>
 {:else}
 <div class="key" data-kind="spacer"></div>
 {/if}

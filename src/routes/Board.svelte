@@ -2,8 +2,6 @@
 	import Row from './Row.svelte';
 	import { onMount } from 'svelte';
 	import { range } from './utils';
-    // import * as wasm from "roget";
-    import { Evaluator } from 'roget';
 
 	let h: number, r: number = 300, l: number=360, n: number;
 	function calculateSize() {
@@ -13,9 +11,9 @@
 	let rows = range(6);
 
 	onMount(calculateSize);
-    function compute() {
-        return Evaluator.compute("crate","jacky");
-    }
+    // function compute() {
+    //     return Evaluator.compute("crate","jacky");
+    // }
 </script>
 
 <div class="board-outer" id="board-container" bind:clientHeight={h}>
