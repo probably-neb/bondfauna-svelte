@@ -12,3 +12,4 @@ target
 dist
 src/wasm-wordle
 yarn-error.log
+yarn-error.log
