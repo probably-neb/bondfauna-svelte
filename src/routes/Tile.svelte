@@ -1,8 +1,13 @@
 <script lang="ts">
+    import { game_state, GameState} from "./driver"
+    import type {TileState} from "./driver"
 	export let col: number, row: number;
+
+    let state: TileState;
+    $: state  = $game_state.board[row][col];
 </script>
 
-<div class="tile" data-guess="empty" ></div>
+<div class="tile" data-guess={state.correctness} >{state.char}</div>
 
 <style lang="scss">
 	@import './reactive_colors.scss';

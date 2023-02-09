@@ -1,16 +1,20 @@
 <script lang="ts">
     import { game_state } from "./driver"
 
-	export let onclick: (char: String) => void | undefined = null,
+	export let onclick: null | ((char: String) => void | undefined) = null,
 		code: string = '',
         kind: string;
+
+    let correctness: string;
+    $: correctness = $game_state.chars[code];
+
 	function clicked() {
 		onclick(code);
 	}
 </script>
 
 {#if kind != "spacer"}
-<button on:click={game_state.send_key(code)} class="key" data-kind={kind}>{code}</button>
+<button on:click={game_state.send_key(code)} class="key" data-guess={correctness} data-kind={kind}>{code}</button>
 {:else}
 <div class="key" data-kind="spacer"></div>
 {/if}
