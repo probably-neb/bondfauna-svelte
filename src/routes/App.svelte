@@ -2,6 +2,13 @@
 	import Header from './Header.svelte';
 	import Board from './Board.svelte';
     import Keyboard from './Keyboard.svelte';
+    import { onMount } from 'svelte';
+    import wasm_init from 'wasm-wordle';
+
+    onMount(async () => {
+        await wasm_init("../../node_modules/wasm-wordle/wasm_wordle_bg.wasm");
+        // console.log(Evaluator.evaluate("crate","crape"));
+    });
 
     function onclick(code: String):void {
         console.log("hit: ",code);

@@ -1,7 +1,7 @@
 use rand::prelude::*;
 use std::iter::zip;
 // use roget::*;
-use roget::{Correctness, Evaluator};
+pub use roget::{Correctness, Evaluator};
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
