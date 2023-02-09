@@ -1,8 +1,16 @@
 <script lang="ts">
-    function reset() {
+    import { game_state} from "./driver"
+
+    async function reset() {
         console.log("reset pressed");
+        await game_state.reset();
     }
 </script>
+
+<div class="appHeader">
+    <div class="appHeader-title">Jordle</div>
+    <div class="menuRight"><button on:click={reset} class="icon"><img class="reset-icon" alt="reset" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.1BErBCwbAGu1VdPMVnaFDQHaHa%26pid%3DApi&f=1&ipt=3390f753bb1715cc6e3291f12a92e211ec2f5ea05cf3d1f45baa5a383dee3c09&ipo=images" ></button></div>
+</div>
 
 <style lang="scss">
 .appHeader {
@@ -117,7 +125,3 @@
 
 </style>
 
-<div class="appHeader">
-    <div class="appHeader-title">Jordle</div>
-    <div class="menuRight"><button on:click={reset} class="icon"><img class="reset-icon" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.1BErBCwbAGu1VdPMVnaFDQHaHa%26pid%3DApi&f=1&ipt=3390f753bb1715cc6e3291f12a92e211ec2f5ea05cf3d1f45baa5a383dee3c09&ipo=images" /></button></div>
-</div>

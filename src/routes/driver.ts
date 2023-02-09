@@ -161,7 +161,7 @@ async function create_game_store() {
         send_key: (chr) => {
             update(s => s.send_char(chr));
         },
-		// reset: () => set(new GameState())
+		reset: async () => set(await create_game_state())
 		// reset: () => set(0)
 	};
 
