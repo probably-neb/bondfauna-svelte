@@ -63,6 +63,7 @@ export class GameState {
     max_guesses: number = 6;
     current_guess: string = "";
     current = {row: 0, col: 0};
+    done: bool = false;
     answer: string;
     row_len: number;
     board: Board;
@@ -98,8 +99,10 @@ export class GameState {
         if (!is_valid_guess(this.current_guess)) return false;
 
         const correctness = Evaluator.evaluate(this.answer, this.current_guess)
+        let all_correct = true;
         for (let i = 0; i < this.row_len; i++) {
-            this.board[this.current.row][i].correctness = correctness[i];
+            let c = correctness[i];
+            this.board[this.current.row][i].correctness = c;
             // NOTE: 
             // Desired functionality here is that characters are never
             // "downgraded" i.e. misplaced chars can be marked correct,
@@ -110,16 +113,22 @@ export class GameState {
             // That just leaves checking if it is already correct
             let char = this.current_guess[i];
             if (this.chars[char] !== "correct") {
-                this.chars[char] = correctness[i];
+                this.chars[char] = c;
             }
+
+            all_correct = all_correct && c === "correct";
         }
-        return true;
+        this.done = all_correct;
+
+        return !all_correct;
     }
 
     check() {
         // do nothing if the guess isn't complete
         if (this.at_end_of_row()) {
-            const should_continue = this.evaluate();
+            const on_last_guess = this.current.row == this.max_guesses - 1;
+            const valid_but_not_correct_guess = this.evaluate();
+            const should_continue = valid_but_not_correct_guess && !on_last_guess;
             if (should_continue) this.step_row();
         }
     }
@@ -128,7 +137,7 @@ export class GameState {
         if (ch == "enter") {
             this.check()
         }
-        else if (ch == "del") {
+        else if (ch == "del" && !this.done) {
             const row = Math.max(0, this.current.row)
             const col = Math.max(0, this.current.col - 1)
             this.board[row][col].char = ""
