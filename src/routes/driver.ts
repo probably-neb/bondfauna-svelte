@@ -1,6 +1,11 @@
 import { range } from './utils';
 import { writable, derived } from "svelte/store";
-import { Evaluator } from 'wasm-wordle';
+import type { Store } from "svelte/store";
+import { Evaluator, Correctness} from 'wasm-wordle';
+
+export function defaultCorrectness() {
+    return "empty";
+}
 // import { GameState } from 'wasm-wordle';
 
 // The map of guessed chars for use in 
@@ -8,7 +13,7 @@ function generate_char_map():{key: string, value: string}[] {
     const alphabet = "abcdefghijklmnopqrstuvwxyz";
     const chars = {}
     for (let char of alphabet) {
-        chars[char] = "empty"
+        chars[char] = defaultCorrectness();
     }
     // const map: Map<string, string> = new Map(Array.from(alphabet).map(c => [c,"empty"]));
     return chars;
@@ -32,6 +37,7 @@ async function generate_answer(length: number) {
 }
 
 // binary search of the wordbank
+// https://stackoverflow.com/questions/69393873/binary-search-in-array-of-object-javascript
 function is_valid_guess(target: string):bool {
     const length = target.length;
     // assumes that wordbank has been populated
@@ -49,6 +55,10 @@ function is_valid_guess(target: string):bool {
 export interface TileState {
     correctness: string;
     char: string;
+}
+
+export function defaultTileState() {
+    return {correctness: defaultCorrectness(), char: " "}
 }
 
 export interface Row {
@@ -78,7 +88,7 @@ export class GameState {
         for (let i = 0; i < this.max_guesses; i++) {
             board[i] = {}
             for ( let j = 0; j  <this.row_len; j++) {
-                board[i][j] = {correctness: "empty", char: ""}
+                board[i][j] = defaultTileState();
             }
         }
         this.board = board
@@ -154,26 +164,44 @@ export class GameState {
 }
 
 
-async function create_game_state() {
-    let answer = await generate_answer(5);
+async function create_game_state(length) {
+    let answer = await generate_answer(length);
     console.log("Generated Answer:",answer);
     let game_state = new GameState(answer);
     return game_state;
 }
 
 async function create_game_store() {
-    let game_state = await create_game_state();
+    let game_state = await create_game_state(5);
     const { subscribe, set, update } = writable(game_state);
 
+    async function reset(length) {
+        
+        if (!length) {
+            // this is definitely a hack
+            update( gs => {
+                length = gs.row_len;
+                return gs;
+            })
+        }
+
+        let new_gamestate = await create_game_state(length);
+        set(new_gamestate);
+    }
 	return {
 		subscribe,
         send_key: (chr) => {
             update(s => s.send_char(chr));
         },
-		reset: async () => set(await create_game_state())
+        change_difficulty: async (diff) => {
+            console.log("Changing difficulty to",diff);
+            await reset(diff);
+        },
+		reset,
 		// reset: () => set(0)
 	};
 
 }
 
 export const game_state = await create_game_store();
+export const board: Store<Board> = derived(game_state, $game_state => $game_state.board);

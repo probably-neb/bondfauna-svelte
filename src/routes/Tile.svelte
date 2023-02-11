@@ -1,10 +1,15 @@
 <script lang="ts">
-    import { game_state, GameState} from "./driver"
-    import type {TileState} from "./driver"
+    import { board, game_state, defaultTileState} from "./driver"
+    import type {TileState, GameState} from "./driver"
 	export let col: number, row: number;
 
-    let state: TileState;
-    $: state  = $game_state.board[row][col];
+    let state: TileState = defaultTileState();
+
+    // async function updateState(gs: Promise<GameState>) {
+    //     state = await gs.then(g => g.board[row][col]);
+    // }
+    $: state = $board[row][col];
+    // $: updateState($game_state);
 </script>
 
 <div class="tile" data-guess={state.correctness} >{state.char}</div>

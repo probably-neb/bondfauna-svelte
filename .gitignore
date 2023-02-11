@@ -13,3 +13,5 @@ dist
 src/wasm-wordle
 yarn-error.log
 yarn-error.log
+*_letter_answers*
+data/ngrams
