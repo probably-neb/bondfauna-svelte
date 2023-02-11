@@ -17,11 +17,14 @@
 <style lang="scss">
 	@import './reactive_colors.scss';
 	.tile {
+        aspect-ratio: 1;
 		width: 100%;
 		display: inline-flex;
 		justify-content: center;
+        /* min-width: 2rem; */
+        /* max-width: 5vw; */
 		align-items: center;
-		font-size: 2rem;
+		font-size: 150%;
 		line-height: 1;
 		font-weight: bold;
 		vertical-align: middle;
@@ -30,11 +33,11 @@
 		-webkit-user-select: none;
 		-moz-user-select: none;
 		user-select: none;
-		color: var(--text-color-default);
+		color: var(--text-color);
 	}
 
 	.tile::before {
-		content: '';
+		content: ' ';
 		display: inline-block;
 		padding-bottom: 100%;
 	}

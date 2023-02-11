@@ -1,20 +1,28 @@
 <script lang="ts">
-    import { game_state } from "./driver"
+    import {game_state, char_states, defaultCorrectness} from "./driver"
+    import type {GameState} from "./driver"
 
-	export let onclick: null | ((char: String) => void | undefined) = null,
-		code: string = '',
-        kind: string;
+	export let code: string = '', kind: string;
 
-    let correctness: string;
-    $: correctness = $game_state.chars[code];
+    const name = code === "backspace" ? "del" : code;
 
-	function clicked() {
-		onclick(code);
-	}
+    let correctness: string = defaultCorrectness();
+
+    // async function updateCorrectness(gs: Promise<GameState>) {
+    //     correctness = await gs.then(g => g.chars[code]);
+    // }
+
+    $: correctness = $char_states[code];
+
+    // $: updateCorrectness($game_state);
+
+	// function clicked() {
+	// 	onclick(code);
+	// }
 </script>
 
 {#if kind != "spacer"}
-<button on:click={game_state.send_key(code)} class="key" data-guess={correctness} data-kind={kind}>{code}</button>
+<button on:click={game_state.send_key(code)} class="key" data-guess={correctness} data-kind={kind}>{name}</button>
 {:else}
 <div class="key" data-kind="spacer"></div>
 {/if}
@@ -34,7 +42,7 @@
 		-webkit-user-select: none;
 		-moz-user-select: none;
 		user-select: none;
-		background-color: var(--key-bg-default);
+		background-color: var(--key-bg);
 		color: var(--key-text-color);
 		display: flex;
 		justify-content: center;

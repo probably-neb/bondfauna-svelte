@@ -147,10 +147,10 @@ export class GameState {
         if (ch == "enter") {
             this.check()
         }
-        else if (ch == "del" && !this.done) {
+        else if (ch == "backspace" && !this.done) {
             const row = Math.max(0, this.current.row)
             const col = Math.max(0, this.current.col - 1)
-            this.board[row][col].char = ""
+            this.board[row][col].char = " "
             this.current.col = col;
             this.current_guess = this.current_guess.slice(0,-1);
         }
@@ -162,7 +162,6 @@ export class GameState {
         return this
     }
 }
-
 
 async function create_game_state(length) {
     let answer = await generate_answer(length);
@@ -188,6 +187,14 @@ async function create_game_store() {
         let new_gamestate = await create_game_state(length);
         set(new_gamestate);
     }
+
+    // IDEA: can gamestate subscribe to writeable(difficulty) so difficulty
+    // can be cause update to gamestate
+    // easiest impl is to extract the subscribe write from writeable(diff)
+    // and wrap set so it updates gamestate before calling original set
+    //
+    // could also have it update board size store
+
 	return {
 		subscribe,
         send_key: (chr) => {
@@ -200,8 +207,11 @@ async function create_game_store() {
 		reset,
 		// reset: () => set(0)
 	};
-
 }
 
+
 export const game_state = await create_game_store();
+export const char_states: Store<{key: string, value: string}[]> = derived(game_state, $game_state => $game_state.chars);
+export const difficulty: Store<number> = derived(game_state, $game_state => $game_state.row_len);
 export const board: Store<Board> = derived(game_state, $game_state => $game_state.board);
+export const board_size: Store<{rows: number, cols: number}> = derived(game_state, $game_state => ({rows: $game_state.max_guesses, cols: $game_state.row_len}));

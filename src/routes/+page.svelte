@@ -1,47 +1,153 @@
 <script lang="ts">
-    import App from "./App.svelte"
+	import Header from './Header.svelte';
+	import Board from './Board.svelte';
+	import Keyboard from './Keyboard.svelte';
+	import { onMount } from 'svelte';
+	import wasm_init from 'wasm-wordle';
+	import { board_size } from './driver';
+
+	onMount(async () => {
+		await wasm_init('../../node_modules/wasm-wordle/wasm_wordle_bg.wasm');
+		// console.log(Evaluator.evaluate("crate","crape"));
+	});
+
+	function calculateBoardSize(rows: number, cols: number) {
+		// if ( rows > cols) {
+		//     return "height: 60%;";
+		// } else {
+		//     return "width: 70%;"
+		// }
+		let dim = rows > cols ? 'height' : 'width';
+		return `aspect-ratio: ${cols}/${rows}; width: ${cols}0%; max-${dim}: 80%;`;
+	}
+	let style: string = 'width: 80%;';
+	$: {
+		const { rows, cols } = $board_size;
+		style = calculateBoardSize(rows, cols);
+	}
+
+	let theme = 'dark';
+	function changeTheme(themeName: string) {
+		window.document.body.classList.replace(theme, themeName);
+		theme = themeName;
+	}
 </script>
 
-<App />
+<div class="game-outer-container">
+	<Header {changeTheme} />
+	<div class="game">
+		<div class="board-container" {style}>
+			<Board />
+		</div>
+		<div class="keyboard-container">
+			<Keyboard />
+		</div>
+	</div>
+</div>
+
+<svelte:head>
+	{#if theme == 'dark'}
+		<style>
+			:root {
+				--bg-color: black;
+				--highlight-color: gray;
+				--text-color: white;
+				--key-bg: silver;
+				--guess-correct: seagreen;
+				--guess-misplaced: gold;
+				--guess-wrong: darkgrey;
+				--guess-fg: white;
+				background-color: var(--bg-color);
+			}
+		</style>
+	{:else if theme == 'light'}
+		<style>
+			:root {
+				--bg-color: antiquewhite;
+				--highlight-color: gray;
+				--text-color: black;
+				--key-bg: silver;
+				--guess-correct: seagreen;
+				--guess-misplaced: gold;
+				--guess-wrong: darkgrey;
+				--guess-fg: white;
+				background-color: var(--bg-color);
+			}
+		</style>
+	{:else if theme == 'pink'}
+		<style>
+			:root {
+				--bg-color: lightcoral;
+				--highlight-color: seashell;
+				--text-color: seashell;
+				--key-bg: seashell;
+				--guess-correct: palegreen;
+				--guess-misplaced: khaki;
+				--guess-wrong: lightgrey;
+				--guess-fg: dimgrey;
+				background-color: var(--bg-color);
+			}
+		</style>
+	{/if}
+</svelte:head>
 
 <style>
-	:global(html) {
-		height: 100%;
+	:root {
+		--keyboard-max-width: 500px;
+		--header-height: 40px;
+		--header-padding-x: 16px;
+		/* font-size: 16px; */
 	}
 	:global(body) {
-		background-color: var(--bg-default);
 		overflow-y: unset;
 		padding: 0px;
 	}
-	:root {
-		--bg-default: black;
-		--highlight-color-default: gray;
-		--text-color-default: white;
-		--key-bg-default: silver;
-		--guess-correct: seagreen;
-		--guess-misplaced: gold;
-		--guess-wrong: darkgrey;
-		--guess-fg: white;
-		--game-max-width: 500px;
-		--header-height: 40px;
-		--header-padding-x: 16px;
-		font-size: 16px;
-	}
-/* Responsive styles */
-@media (min-width: 415px) {
-  :root {
-    --header-height: 65px;
-  }
-}
-@media (min-width: 1024px) {
-  :root {
-    --header-padding-x: 24px;
-  }
-}
 
-@media (min-width: 768px) {
-  :root {
-    --header-padding-x: 20px;
-  }
-}
+	/* Responsive styles */
+	@media (min-width: 415px) {
+		:root {
+			--header-height: 65px;
+		}
+	}
+	@media (min-width: 1024px) {
+		:root {
+			--header-padding-x: 24px;
+		}
+	}
+
+	@media (min-width: 768px) {
+		:root {
+			--header-padding-x: 20px;
+		}
+	}
+
+	.game-outer-container {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+	}
+
+	.game {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		height: calc(100% - var(--header-height));
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-direction: column;
+		flex-flow: column;
+	}
+
+	.board-container {
+		margin: auto 10%;
+	}
+
+	.keyboard-container {
+		max-width: var(--keyboard-max-width);
+		margin-bottom: 10%;
+		width: 85%;
+	}
 </style>

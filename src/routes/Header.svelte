@@ -1,9 +1,19 @@
 <script lang="ts">
 	import { game_state } from './driver';
 
+    export let changeTheme;
 
+    let theme = "dark";
+    let theme_changed = false;
+    const themes = ["dark", "light", "pink"];
 
+    $: if (theme_changed) {
+        console.log("theme changed to " + theme);
+        changeTheme(theme);
+    } else {
+        theme_changed = true;
     }
+    // $: difficulty = $game_state.difficulty;
     let difficulty = 5;
     let difficulty_changed = false;
     const difficulties = [4,5,6,7,8,9];
