@@ -8,15 +8,11 @@
 
 	onMount(async () => {
 		await wasm_init('../../node_modules/wasm-wordle/wasm_wordle_bg.wasm');
-		// console.log(Evaluator.evaluate("crate","crape"));
+        console.log('wasm loaded');
+
 	});
 
 	function calculateBoardSize(rows: number, cols: number) {
-		// if ( rows > cols) {
-		//     return "height: 60%;";
-		// } else {
-		//     return "width: 70%;"
-		// }
 		let dim = rows > cols ? 'height' : 'width';
 		return `aspect-ratio: ${cols}/${rows}; width: ${cols}0%; max-${dim}: 80%;`;
 	}
@@ -31,7 +27,15 @@
 		window.document.body.classList.replace(theme, themeName);
 		theme = themeName;
 	}
+function keydown(event: KeyboardEvent) {
+		if (event.metaKey) return;
+		document
+			.querySelector(`[data-key="${event.key}" i]`)
+			?.dispatchEvent(new MouseEvent('click', { cancelable: true }));
+	}
 </script>
+
+<svelte:window on:keydown={keydown} />
 
 <div class="game-outer-container">
 	<Header {changeTheme} />
@@ -96,7 +100,6 @@
 		--keyboard-max-width: 500px;
 		--header-height: 40px;
 		--header-padding-x: 16px;
-		/* font-size: 16px; */
 	}
 	:global(body) {
 		overflow-y: unset;

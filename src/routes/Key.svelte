@@ -22,7 +22,7 @@
 </script>
 
 {#if kind != "spacer"}
-<button on:click={game_state.send_key(code)} class="key" data-guess={correctness} data-kind={kind}>{name}</button>
+<button on:click={game_state.send_key(code)} class="key" data-guess={correctness} data-kind={kind} data-key={code}>{name}</button>
 {:else}
 <div class="key" data-kind="spacer"></div>
 {/if}
