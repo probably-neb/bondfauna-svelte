@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	import wasm_init from 'wasm-wordle';
 	import { board_size } from './driver';
+    import wasmUrl from '../wasm-wordle/wasm_wordle_bg.wasm?url';
 
 	onMount(async () => {
 		await wasm_init(wasmUrl);
