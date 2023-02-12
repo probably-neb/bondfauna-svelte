@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { game_state } from './driver';
+    import ResetIcon from '$lib/reset.svg?component';
 
     export let changeTheme;
 
@@ -50,12 +51,9 @@
 	</div>
 	<div class="appHeader-title">Jordle</div>
 	<div class="menuRight">
-		<button on:click={reset} class="icon"
-			><img
-				class="reset-icon"
-				alt="reset"
-				src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.1BErBCwbAGu1VdPMVnaFDQHaHa%26pid%3DApi&f=1&ipt=3390f753bb1715cc6e3291f12a92e211ec2f5ea05cf3d1f45baa5a383dee3c09&ipo=images"
-			/></button
+		<button on:click={reset} class="icon" >
+            <ResetIcon width="24px" height="24px" color="var(--text-color)"/>
+        </button
 		>
 	</div>
 </div>
@@ -88,12 +86,19 @@
 		}
 	}
 
+    svg {
+        path {
+            fill: var(--text-color);
+        }
+    }
+
 	.reset-icon {
 		object-fit: contain;
 		height: 24px;
 		height: 24px;
-		-webkit-filter: invert(100%);
-		filter: invert(100%);
+        /* color: var(--text-color); */
+		/* -webkit-filter: invert(100%); */
+		/* filter: invert(100%); */
 		// viewBox: 4 4 24 24;
 	}
 
