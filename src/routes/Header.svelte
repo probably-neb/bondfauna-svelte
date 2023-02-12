@@ -1,32 +1,31 @@
 <script lang="ts">
 	import { game_state } from './driver';
-    import ResetIcon from '$lib/reset.svg?component';
+	import ResetIcon from '$lib/reset.svg?component';
 
-    export let changeTheme;
+	export let changeTheme;
 
-    let theme = "dark";
-    let theme_changed = false;
-    const themes = ["dark", "light", "pink"];
+	let theme = 'dark';
+	let theme_changed = false;
+	const themes = ['dark', 'light', 'pink'];
 
-    $: if (theme_changed) {
-        console.log("theme changed to " + theme);
-        changeTheme(theme);
-    } else {
-        theme_changed = true;
-    }
-    // $: difficulty = $game_state.difficulty;
-    let difficulty = 5;
-    let difficulty_changed = false;
-    const difficulties = [4,5,6,7,8,9];
+	$: if (theme_changed) {
+		console.log('theme changed to ' + theme);
+		changeTheme(theme);
+	} else {
+		theme_changed = true;
+	}
+	// $: difficulty = $game_state.difficulty;
+	let difficulty = 5;
+	let difficulty_changed = false;
+	const difficulties = [4, 5, 6, 7, 8, 9];
 
-
-    $: if (difficulty_changed) {
-        // last_difficulty = difficulty;
-        console.log("difficulty changed to " + difficulty);
-        game_state.change_difficulty(difficulty);
-    } else {
-        difficulty_changed = true;
-    }
+	$: if (difficulty_changed) {
+		// last_difficulty = difficulty;
+		console.log('difficulty changed to ' + difficulty);
+		game_state.change_difficulty(difficulty);
+	} else {
+		difficulty_changed = true;
+	}
 
 	async function reset() {
 		console.log('reset pressed');
@@ -37,24 +36,23 @@
 <div class="appHeader">
 	<div class="menuLeft">
 		<div id="dropdown">
-            <select bind:value={difficulty}>
-                {#each difficulties as d}
-                    <option value={d}>{d}</option>
-                {/each}
-            </select>
+			<select bind:value={difficulty}>
+				{#each difficulties as d}
+					<option value={d}>{d}</option>
+				{/each}
+			</select>
 		</div>
-        <select bind:value={theme}>
-            {#each themes as t}
-                <option value={t}>{t}</option>
-            {/each}
-        </select>
+		<select bind:value={theme}>
+			{#each themes as t}
+				<option value={t}>{t}</option>
+			{/each}
+		</select>
 	</div>
 	<div class="appHeader-title">Jordle</div>
 	<div class="menuRight">
-		<button on:click={reset} class="icon" >
-            <ResetIcon width="24px" height="24px" color="var(--text-color)"/>
-        </button
-		>
+		<button on:click={reset} class="icon">
+			<ResetIcon width="24px" height="24px" color="var(--text-color)" />
+		</button>
 	</div>
 </div>
 
@@ -86,17 +84,17 @@
 		}
 	}
 
-    svg {
-        path {
-            fill: var(--text-color);
-        }
-    }
+	svg {
+		path {
+			fill: var(--text-color);
+		}
+	}
 
 	.reset-icon {
 		object-fit: contain;
 		height: 24px;
 		height: 24px;
-        /* color: var(--text-color); */
+		/* color: var(--text-color); */
 		/* -webkit-filter: invert(100%); */
 		/* filter: invert(100%); */
 		// viewBox: 4 4 24 24;

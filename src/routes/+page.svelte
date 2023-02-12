@@ -7,9 +7,8 @@
 	import { board_size } from './driver';
 
 	onMount(async () => {
-		await wasm_init('../../node_modules/wasm-wordle/wasm_wordle_bg.wasm');
-        console.log('wasm loaded');
-
+		await wasm_init(wasmUrl);
+		console.log('wasm loaded');
 	});
 
 	function calculateBoardSize(rows: number, cols: number) {
@@ -27,7 +26,7 @@
 		window.document.body.classList.replace(theme, themeName);
 		theme = themeName;
 	}
-function keydown(event: KeyboardEvent) {
+	function keydown(event: KeyboardEvent) {
 		if (event.metaKey) return;
 		document
 			.querySelector(`[data-key="${event.key}" i]`)
@@ -133,7 +132,7 @@ function keydown(event: KeyboardEvent) {
 	}
 
 	.game {
-        margin: auto;
+		margin: auto;
 		position: relative;
 		width: 100%;
 		height: 100%;

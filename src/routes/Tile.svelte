@@ -1,28 +1,22 @@
 <script lang="ts">
-    import { board, game_state, defaultTileState} from "./driver"
-    import type {TileState, GameState} from "./driver"
+	import { board, game_state, defaultTileState } from './driver';
+	import type { TileState, GameState } from './driver';
 	export let col: number, row: number;
 
-    let state: TileState = defaultTileState();
+	let state: TileState = defaultTileState();
 
-    // async function updateState(gs: Promise<GameState>) {
-    //     state = await gs.then(g => g.board[row][col]);
-    // }
-    $: state = $board[row][col];
-    // $: updateState($game_state);
+	$: state = $board[row][col];
 </script>
 
-<div class="tile" data-guess={state.correctness} >{state.char}</div>
+<div class="tile" data-guess={state.correctness}>{state.char}</div>
 
 <style lang="scss">
 	@import './reactive_colors.scss';
 	.tile {
-        aspect-ratio: 1;
+		aspect-ratio: 1;
 		width: 100%;
 		display: inline-flex;
 		justify-content: center;
-        /* min-width: 2rem; */
-        /* max-width: 5vw; */
 		align-items: center;
 		font-size: 150%;
 		line-height: 1;

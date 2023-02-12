@@ -8,20 +8,20 @@ import svg from '@poppanator/sveltekit-svg';
 
 const config: UserConfig = defineConfig({
 	plugins: [
-        sveltekit(),
-        svg(),
-        wasm(),
-        topLevelAwait()
-        // ,ViteRsw()
-    ],
-    server: {
-        fs: {
-            // allow: [
-            //     './roget/pkg/',
-            //     './wasm-wordle/pkg/'
-            // ]
-        }
-    }
+		sveltekit(),
+		svg(),
+		wasm(),
+		topLevelAwait()
+		// ,ViteRsw()
+	],
+	server: {
+		fs: {
+			// allow: [
+			//     './roget/pkg/',
+			//     './wasm-wordle/pkg/'
+			// ]
+		}
+	}
 });
 
 export default config;

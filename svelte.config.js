@@ -5,18 +5,17 @@ import { vitePreprocess } from '@sveltejs/kit/vite';
 const config = {
 	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
 	// for more information about preprocessors
-    // this is for typescript compilation
+	// this is for typescript compilation
 	preprocess: vitePreprocess(),
 
 	kit: {
 		adapter: adapter({
-            pages: 'build',
-            assets: 'build',
-            fallback: null,
-            precompress: false,
-            strict: true,
-
-        })
+			pages: 'build',
+			assets: 'build',
+			fallback: null,
+			precompress: false,
+			strict: true
+		})
 	}
 };
 

@@ -1,21 +1,21 @@
-.tile[data-guess="empty"] {
-  border: 2px solid var(--highlight-color);
+.tile[data-guess='empty'] {
+	border: 2px solid var(--highlight-color);
 }
 
-.tile[data-guess="correct"],
-.key[data-guess="correct"] {
-  background-color: var(--guess-correct);
-  color: var(--guess-fg);
+.tile[data-guess='correct'],
+.key[data-guess='correct'] {
+	background-color: var(--guess-correct);
+	color: var(--guess-fg);
 }
 
-.tile[data-guess="wrong"],
-.key[data-guess="wrong"] {
-  background-color: var(--guess-wrong);
-  color: var(--guess-fg);
+.tile[data-guess='wrong'],
+.key[data-guess='wrong'] {
+	background-color: var(--guess-wrong);
+	color: var(--guess-fg);
 }
 
-.tile[data-guess="misplaced"],
-.key[data-guess="misplaced"] {
-  background-color: var(--guess-misplaced);
-  color: var(--guess-fg);
+.tile[data-guess='misplaced'],
+.key[data-guess='misplaced'] {
+	background-color: var(--guess-misplaced);
+	color: var(--guess-fg);
 }

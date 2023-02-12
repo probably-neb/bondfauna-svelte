@@ -1,30 +1,37 @@
 <script lang="ts">
-    import {game_state, char_states, defaultCorrectness} from "./driver"
-    import type {GameState} from "./driver"
+	import { game_state, char_states, defaultCorrectness } from './driver';
+	import type { GameState } from './driver';
 
-	export let code: string = '', kind: string;
+	export let code: string = '',
+		kind: string;
 
-    const name = code === "backspace" ? "del" : code;
+	const name = code === 'backspace' ? 'del' : code;
 
-    let correctness: string = defaultCorrectness();
+	let correctness: string = defaultCorrectness();
 
-    // async function updateCorrectness(gs: Promise<GameState>) {
-    //     correctness = await gs.then(g => g.chars[code]);
-    // }
+	// async function updateCorrectness(gs: Promise<GameState>) {
+	//     correctness = await gs.then(g => g.chars[code]);
+	// }
 
-    $: correctness = $char_states[code];
+	$: correctness = $char_states[code];
 
-    // $: updateCorrectness($game_state);
+	// $: updateCorrectness($game_state);
 
 	// function clicked() {
 	// 	onclick(code);
 	// }
 </script>
 
-{#if kind != "spacer"}
-<button on:click={game_state.send_key(code)} class="key" data-guess={correctness} data-kind={kind} data-key={code}>{name}</button>
+{#if kind != 'spacer'}
+	<button
+		on:click={game_state.send_key(code)}
+		class="key"
+		data-guess={correctness}
+		data-kind={kind}
+		data-key={code}>{name}</button
+	>
 {:else}
-<div class="key" data-kind="spacer"></div>
+	<div class="key" data-kind="spacer" />
 {/if}
 
 <style lang="scss">
