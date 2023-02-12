@@ -133,6 +133,7 @@ function keydown(event: KeyboardEvent) {
 	}
 
 	.game {
+        margin: auto;
 		position: relative;
 		width: 100%;
 		height: 100%;
@@ -142,6 +143,7 @@ function keydown(event: KeyboardEvent) {
 		align-items: center;
 		flex-direction: column;
 		flex-flow: column;
+		max-width: var(--keyboard-max-width);
 	}
 
 	.board-container {
@@ -149,7 +151,6 @@ function keydown(event: KeyboardEvent) {
 	}
 
 	.keyboard-container {
-		max-width: var(--keyboard-max-width);
 		margin-bottom: 10%;
 		width: 85%;
 	}
