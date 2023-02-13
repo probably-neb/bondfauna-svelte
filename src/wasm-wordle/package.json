@@ -1,0 +1,12 @@
+{
+  "name": "wasm-wordle",
+  "version": "0.1.0",
+  "files": [
+    "wasm_wordle_bg.wasm",
+    "wasm_wordle.js",
+    "wasm_wordle.d.ts"
+  ],
+  "module": "wasm_wordle.js",
+  "types": "wasm_wordle.d.ts",
+  "sideEffects": false
+}
