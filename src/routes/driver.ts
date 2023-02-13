@@ -2,6 +2,7 @@ import { range } from './utils';
 import { writable, derived } from 'svelte/store';
 import type { Store } from 'svelte/store';
 import { assets } from "$app/paths";
+import { browser  } from '$app/environment';
 
 export const Correctness = Object.freeze({
 /**
@@ -24,7 +25,6 @@ wrong:"wrong",
 export function defaultCorrectness() {
 	return 'empty';
 }
-// import { GameState } from 'wasm-wordle';
 
 // The map of guessed chars for use in
 function generate_char_map(): { key: string; value: string }[] {
@@ -37,38 +37,31 @@ function generate_char_map(): { key: string; value: string }[] {
 	return chars;
 }
 
-let wordbank = {};
-
-async function get_possible_answers(length: number) {
-	const path = `${assets}/${length}_letter_answers.json`;
-	const words = await fetch(path).then((response) => response.json());
-	wordbank[length] = words;
-	console.log('Fetched ' + words.length + ' ' + length + ' letter words');
-}
-
 async function generate_answer(length: number) {
-	if (!(length in wordbank)) {
-		await get_possible_answers(length);
-	}
-	const index = Math.floor(Math.random() * wordbank[length].length);
-	return wordbank[length][index];
+    if (browser) {
+    const word = await fetch(
+            `/api/wordbank?length=${length}`, {
+                method: "GET"
+            }).then((response) => response.text());
+    return word;
+    }
+    else {
+        // Dirty little hack to get a valid word. 
+        // necessary to have ssr
+        // A new answer is always generated client side
+        return "wait!";
+    }
 }
 
 // binary search of the wordbank
 // https://stackoverflow.com/questions/69393873/binary-search-in-array-of-object-javascript
-function is_valid_guess(target: string): bool {
-	const length = target.length;
-	// assumes that wordbank has been populated
-	let lo = 0,
-		hi = wordbank[length].length;
-	while (lo < hi) {
-		let mid = (lo + hi) >> 1;
-		let key = wordbank[length][mid];
-		if (key === target) return true;
-		else if (key > target) hi = mid;
-		else lo = mid + 1;
-	}
-	return false;
+async function is_valid_guess(target: string): bool {
+    const valid = await fetch(
+        '/api/wordbank', {
+            method: "POST",
+            body: target
+        }).then((response) => response.json());
+    return valid;
 }
 
 function compute_correctness(answer: string, guess: string ):bool {
@@ -149,7 +142,7 @@ export class GameState {
 		return this.row_len == this.current.col;
 	}
 
-	evaluate(): bool {
+	async evaluate(): bool {
 		// console.log(Evaluator);
         const guess = this.current_guess;
         const valid = await is_valid_guess(guess);
@@ -182,19 +175,19 @@ export class GameState {
 		return !all_correct;
 	}
 
-	check() {
+	async check() {
 		// do nothing if the guess isn't complete
 		if (this.at_end_of_row()) {
 			const on_last_guess = this.current.row == this.max_guesses - 1;
-			const valid_but_not_correct_guess = this.evaluate();
+			const valid_but_not_correct_guess = await this.evaluate();
 			const should_continue = valid_but_not_correct_guess && !on_last_guess;
 			if (should_continue) this.step_row();
 		}
 	}
 
-	send_char(ch: string): GameState {
+	async send_char(ch: string): GameState {
 		if (ch == 'enter') {
-			this.check();
+			await this.check();
 		} else if (ch == 'backspace' && !this.done) {
 			const row = Math.max(0, this.current.row);
 			const col = Math.max(0, this.current.col - 1);
@@ -219,6 +212,7 @@ async function create_game_state(length) {
 
 async function create_game_store() {
 	let game_state = await create_game_state(5);
+
 	const { subscribe, set, update } = writable(game_state);
 
 	async function reset(length) {
@@ -231,7 +225,8 @@ async function create_game_store() {
 		}
 
 		let new_gamestate = await create_game_state(length);
-		set(new_gamestate);
+        game_state = new_gamestate;
+		set(game_state);
 	}
 
 	// IDEA: can gamestate subscribe to writeable(difficulty) so difficulty
@@ -243,8 +238,13 @@ async function create_game_store() {
 
 	return {
 		subscribe,
-		send_key: (chr) => {
-			update((s) => s.send_char(chr));
+		send_key: async (chr) => {
+            // update uses set behind the scenes anyway
+            // as far as I can tell so this is an easy
+            // way to update the game state with async
+
+            await game_state.send_char(chr);
+            set(game_state);
 		},
 		change_difficulty: async (diff) => {
 			console.log('Changing difficulty to', diff);
