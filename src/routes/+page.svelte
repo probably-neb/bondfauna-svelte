@@ -3,8 +3,8 @@
 	import Board from './Board.svelte';
 	import Keyboard from './Keyboard.svelte';
 	import { onMount } from 'svelte';
-	import wasm_init from 'wasm-wordle';
 	import { board_size } from './driver';
+	import wasm_init from 'wasm-wordle';
     import wasmUrl from '../wasm-wordle/wasm_wordle_bg.wasm?url';
 
 	onMount(async () => {
@@ -16,17 +16,21 @@
 		let dim = rows > cols ? 'height' : 'width';
 		return `aspect-ratio: ${cols}/${rows}; width: ${cols}0%; max-${dim}: 80%;`;
 	}
+
 	let style: string = 'width: 80%;';
+
 	$: {
 		const { rows, cols } = $board_size;
 		style = calculateBoardSize(rows, cols);
 	}
 
 	let theme = 'dark';
+
 	function changeTheme(themeName: string) {
 		window.document.body.classList.replace(theme, themeName);
 		theme = themeName;
 	}
+
 	function keydown(event: KeyboardEvent) {
 		if (event.metaKey) return;
 		document

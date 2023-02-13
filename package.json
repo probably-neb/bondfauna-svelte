@@ -4,16 +4,13 @@
 	"private": true,
 	"scripts": {
 		"wasm": "rm -rf ./wasm-wordle/pkg && wasm-pack build wasm-wordle && yarn upgrade wasm-wordle",
-		"_dev": "vite dev",
-		"_build": "vite build",
+		"dev": "vite dev",
+		"build": "yarn cache clean && vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
-		"format": "prettier --plugin-search-dir . --write .",
-		"dev": "concurrently \"rsw watch\" \"vite\"",
-		"build": "rsw build && tsc && vite build",
-		"rsw": "rsw"
+		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"devDependencies": {
 		"@poppanator/sveltekit-svg": "^2.1.2",

@@ -2,6 +2,7 @@ import { range } from './utils';
 import { writable, derived } from 'svelte/store';
 import type { Store } from 'svelte/store';
 import { Evaluator, Correctness } from 'wasm-wordle';
+import { assets } from "$app/paths";
 
 export function defaultCorrectness() {
 	return 'empty';
@@ -22,7 +23,7 @@ function generate_char_map(): { key: string; value: string }[] {
 let wordbank = {};
 
 async function get_possible_answers(length: number) {
-	const path = `/${length}_letter_answers.json`;
+	const path = `${assets}/${length}_letter_answers.json`;
 	const words = await fetch(path).then((response) => response.json());
 	wordbank[length] = words;
 	console.log('Fetched ' + words.length + ' ' + length + ' letter words');

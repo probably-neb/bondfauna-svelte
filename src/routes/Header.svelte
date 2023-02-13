@@ -35,14 +35,14 @@
 
 <div class="appHeader">
 	<div class="menuLeft">
-		<div id="dropdown">
-			<select bind:value={difficulty}>
-				{#each difficulties as d}
-					<option value={d}>{d}</option>
-				{/each}
-			</select>
-		</div>
-		<select bind:value={theme}>
+		<label for="difficulty">Difficulty:</label>
+		<select id="difficulty" bind:value={difficulty}>
+			{#each difficulties as d}
+				<option value={d}>{d}</option>
+			{/each}
+		</select>
+        <label for="theme">Theme:</label>
+		<select id="theme" bind:value={theme}>
 			{#each themes as t}
 				<option value={t}>{t}</option>
 			{/each}
@@ -122,6 +122,8 @@
 		padding: 0;
 		align-items: center;
 		justify-content: flex-start;
+		flex-flow: row;
+		flex-direction: row;
 	}
 
 	.menuRight {
@@ -172,5 +174,20 @@
 			padding-top: 2px;
 			padding-left: 0px;
 		}
+	}
+
+	select {
+		/* width: 140px; */
+		/* height: 35px; */
+		/* padding: 5px 35px 5px 5px; */
+		/* font-size: 18px; */
+		margin: 0 10px 0 10px;
+		border: 2px solid #ccc;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		background-color: var(--bg-color);
+		color: var(--text-color);
+		/* background: url("/uploads/media/default/0001/02/f7b4d3d2ba3fe1d8518e6e63d7740e1e73921abf.png") 96% / 15% no-repeat #eee; */
 	}
 </style>
