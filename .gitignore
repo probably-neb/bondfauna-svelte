@@ -10,9 +10,9 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 target
 dist
-src/wasm-wordle
 yarn-error.log
 yarn-error.log
-*_letter_answers*
+*_letter_answers*.txt
 data/ngrams
 data/possible_answers.txt
+.vercel
