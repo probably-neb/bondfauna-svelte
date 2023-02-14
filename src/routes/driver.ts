@@ -1,8 +1,25 @@
 import { range } from './utils';
 import { writable, derived } from 'svelte/store';
 import type { Store } from 'svelte/store';
-import { Evaluator, Correctness } from 'wasm-wordle';
 import { assets } from "$app/paths";
+
+export const Correctness = Object.freeze({
+/**
+* Green
+*/
+// correct:3,3:"correct",
+correct:"correct",
+/**
+* Yellow
+*/
+// misplaced:2,2:"misplaced",
+misplaced:"misplaced",
+/**
+* Gray
+*/
+// wrong:1,1:"wrong", 
+wrong:"wrong", 
+});
 
 export function defaultCorrectness() {
 	return 'empty';
@@ -52,6 +69,32 @@ function is_valid_guess(target: string): bool {
 		else lo = mid + 1;
 	}
 	return false;
+}
+
+function compute_correctness(answer: string, guess: string ):bool {
+    let misplaced = {}
+    // assumes answer and guess are the same length
+    const length = guess.length;
+
+    let correctness = Array(length).fill(Correctness.wrong);
+    for (let i = 0; i < length; i++) {
+        if (answer[i] === guess[i]) {
+            correctness[i] = Correctness.correct;
+        } else {
+            const count = misplaced[answer[i]] ?? 0;
+            misplaced[answer[i]] = count + 1;
+        }
+    }
+
+    for (let i = 0; i < length; i++) {
+        const times_misplaced = misplaced[guess[i]] ?? 0;
+        if (correctness[i] === Correctness.wrong && times_misplaced > 0) {
+            correctness[i] = Correctness.misplaced;
+            misplaced[guess[i]] = times_misplaced - 1;
+        }
+    }
+
+    return correctness;
 }
 
 export interface TileState {
@@ -108,7 +151,11 @@ export class GameState {
 
 	evaluate(): bool {
 		// console.log(Evaluator);
-		if (!is_valid_guess(this.current_guess)) return false;
+        const guess = this.current_guess;
+        const valid = await is_valid_guess(guess);
+        console.log("guess:",`"${guess}"`,"valid:",valid);
+
+		if (!valid) return false;
 
 		const correctness = Evaluator.evaluate(this.answer, this.current_guess);
 		let all_correct = true;

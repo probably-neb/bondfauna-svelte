@@ -2,15 +2,7 @@
 	import Header from './Header.svelte';
 	import Board from './Board.svelte';
 	import Keyboard from './Keyboard.svelte';
-	import { onMount } from 'svelte';
 	import { board_size } from './driver';
-	import wasm_init from 'wasm-wordle';
-    import wasmUrl from '../wasm-wordle/wasm_wordle_bg.wasm?url';
-
-	onMount(async () => {
-		await wasm_init(wasmUrl);
-		console.log('wasm loaded');
-	});
 
 	function calculateBoardSize(rows: number, cols: number) {
 		let dim = rows > cols ? 'height' : 'width';
