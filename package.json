@@ -32,5 +32,8 @@
 		"vite": "^4.0.0",
 		"vite-plugin-top-level-await": "^1.2.4"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@googleapis/sheets": "^4.0.1"
+	}
 }
