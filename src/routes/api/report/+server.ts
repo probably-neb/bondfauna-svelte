@@ -21,31 +21,20 @@ console.log(auth);
 
 const sheets = spreadsheets.sheets({version: 'v4', auth});
 
-const letters = {
-    4: 'A',
-    5: 'B',
-    6: 'C',
-    7: 'D',
-    8: 'E',
-    9: 'F',
-}
-
 /* @type {import('@sveltejs/kit').RequestHandler}} */
 export async function POST( { request } ) {
     const { word, action } = await request.json();
 
-    const length = word.length;
-    const col = letters[length];
-
     // console.log(word,action);
-    const page = action
-    const range = `${page}!${col}2:${col}`;
+    const page = `${action}${word.length}`
+    const range = `${page}!A:A`;
+    console.log({range})
 
     const res = await sheets.spreadsheets.values.append({
         spreadsheetId: GOOGLE_SHEET_ID,
         range,
         valueInputOption: 'RAW',
-        requestBody: { values: [[word]] },
+        requestBody: {values: [[word]]},
     })
     console.log(res.data);
 

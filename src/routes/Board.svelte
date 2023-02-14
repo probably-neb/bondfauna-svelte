@@ -28,13 +28,13 @@
         }).then(res => res.json());
         const action  = valid ? 'remove' : 'add' ;
 
-        // await fetch('/api/report', {
-        //     method: 'POST',
-        //     body: JSON.stringify({ word, action}),
-        //     headers: {
-        //         'content-type': 'application/json'
-        //     }
-        // });
+        await fetch('/api/report', {
+            method: 'POST',
+            body: JSON.stringify({ word, action}),
+            headers: {
+                'content-type': 'application/json'
+            }
+        });
         console.log(action,word);
     }
 
