@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { game_state } from './driver';
 	import ResetIcon from '$lib/reset.svg?component';
+	import Hamburger from '$lib/hamburger.svelte';
+	import {
+		Dropdown,
+		DropdownItem,
+		DropdownMenu,
+		DropdownToggle,
+	} from 'sveltestrap';
 
 	export let changeTheme;
 
@@ -31,22 +38,42 @@
 		console.log('reset pressed');
 		await game_state.reset(difficulty);
 	}
+	function setDifficulty(d: number) {
+		return () => {
+			difficulty = d;
+		};
+	}
+	function setTheme(t: string) {
+		return () => {
+			theme = t;
+		};
+	}
 </script>
 
 <div class="appHeader">
 	<div class="menuLeft">
-		<label for="difficulty">Difficulty:</label>
-		<select id="difficulty" bind:value={difficulty}>
-			{#each difficulties as d}
-				<option value={d}>{d}</option>
-			{/each}
-		</select>
-        <label for="theme">Theme:</label>
-		<select id="theme" bind:value={theme}>
-			{#each themes as t}
-				<option value={t}>{t}</option>
-			{/each}
-		</select>
+		<Dropdown>
+			<DropdownToggle><Hamburger /></DropdownToggle>
+			<DropdownMenu>
+				<Dropdown setActiveFromChild direction="right" color="transparent">
+					<DropdownToggle class="dropdown-item">Difficulty: {difficulty}</DropdownToggle>
+					<DropdownMenu>
+						{#each difficulties as d}
+							<DropdownItem active={difficulty === d} on:click={setDifficulty(d)}>{d}</DropdownItem>
+						{/each}
+					</DropdownMenu>
+				</Dropdown>
+				<DropdownItem divider />
+				<Dropdown direction="right">
+					<DropdownToggle class="dropdown-item">Theme</DropdownToggle>
+					<DropdownMenu>
+						{#each themes as t}
+							<DropdownItem active={theme === t} on:click={setTheme(t)}>{t}</DropdownItem>
+						{/each}
+					</DropdownMenu>
+				</Dropdown>
+			</DropdownMenu>
+		</Dropdown>
 	</div>
 	<div class="appHeader-title">Jordle</div>
 	<div class="menuRight">
@@ -57,6 +84,7 @@
 </div>
 
 <style lang="scss">
+	@import 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css';
 	.appHeader {
 		display: flex;
 		flex-direction: row;
@@ -174,20 +202,5 @@
 			padding-top: 2px;
 			padding-left: 0px;
 		}
-	}
-
-	select {
-		/* width: 140px; */
-		/* height: 35px; */
-		/* padding: 5px 35px 5px 5px; */
-		/* font-size: 18px; */
-		margin: 0 10px 0 10px;
-		border: 2px solid #ccc;
-		-webkit-appearance: none;
-		-moz-appearance: none;
-		appearance: none;
-		background-color: var(--bg-color);
-		color: var(--text-color);
-		/* background: url("/uploads/media/default/0001/02/f7b4d3d2ba3fe1d8518e6e63d7740e1e73921abf.png") 96% / 15% no-repeat #eee; */
 	}
 </style>
