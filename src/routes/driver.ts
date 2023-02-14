@@ -150,7 +150,7 @@ export class GameState {
 
 		if (!valid) return false;
 
-		const correctness = Evaluator.evaluate(this.answer, this.current_guess);
+		const correctness = compute_correctness(this.answer, this.current_guess);
 		let all_correct = true;
 		for (let i = 0; i < this.row_len; i++) {
 			let c = correctness[i];
