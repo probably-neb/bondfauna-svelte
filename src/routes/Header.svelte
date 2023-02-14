@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { game_state } from './driver';
 	import ResetIcon from '$lib/reset.svg?component';
+    import PaintIcon from '$lib/paintbrush.svelte';
+    import LenIcon from '$lib/lengths.svelte';
 
 	export let changeTheme;
 
@@ -35,13 +37,13 @@
 
 <div class="appHeader">
 	<div class="menuLeft">
-		<label for="difficulty">Difficulty:</label>
+		<label for="difficulty"><LenIcon color="var(--text-color)"/></label>
 		<select id="difficulty" bind:value={difficulty}>
 			{#each difficulties as d}
 				<option value={d}>{d}</option>
 			{/each}
 		</select>
-        <label for="theme">Theme:</label>
+        <label for="theme"><PaintIcon color="var(--text-color)" /></label>
 		<select id="theme" bind:value={theme}>
 			{#each themes as t}
 				<option value={t}>{t}</option>
