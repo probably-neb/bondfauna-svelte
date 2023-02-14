@@ -4,83 +4,97 @@
 	import { range } from './utils';
 	import { game_state } from './driver';
 	import Tile from './Tile.svelte';
+	import { fade } from 'svelte/transition';
+    import { get } from 'svelte/store';
+
+    import ReportIcon from '$lib/report.svelte';
+    // TODO: look at crossfade transition, it may 
+    // be the key to making changing the board size 
+    // happen smoothly
+    // 
+    // in order to crossfade must matching elems must be on percentage
+    // distance from center of grid rounded to int
 
 	let rows: number;
 	let cols: number;
 	$: cols = $game_state.row_len;
 	$: rows = $game_state.max_guesses;
 
-	// export let row: number;
-	// let cols: number[]; //= range(5);
-	// $: cols = range($game_state.row_len);
+    async function report(row: number) {
+        const word = get(game_state).word_at_row(row);
+        const valid = await fetch('/api/wordbank', {
+            method: 'POST',
+            body: word,
+        }).then(res => res.json());
+        const action  = valid ? 'remove' : 'add' ;
 
-	let clientHeight: number,
-		w: number = 300,
-		h: number = 360,
-		n: number;
-	function calculateSize() {
-		const num = cols,
-			dem = rows;
-		const low = 50 * dem,
-			high = low + 50;
-		let n = Math.floor(clientHeight * (num / dem));
-		w = Math.min(Math.max(n, num * 50), dem * 50);
-		h = dem * Math.floor(w / num);
-	}
+        // await fetch('/api/report', {
+        //     method: 'POST',
+        //     body: JSON.stringify({ word, action}),
+        //     headers: {
+        //         'content-type': 'application/json'
+        //     }
+        // });
+        console.log(action,word);
+    }
 
-	// onMount(calculateSize);
-	// function compute() {
-	//     return Evaluator.compute("crate","jacky");
-	// }
 </script>
 
-<!-- <div class="board-outer" id="board-container" bind:clientHeight={clientHeight}> -->
-<!-- <div class="board-inner" style:width="{w}px" style:height="{h}px" style:grid-template-rows="repeat({rows},1fr)"> -->
-<!-- <div class="board-inner" style:grid-template-rows="repeat({rows},1fr)"> -->
-<div class="board">
-	{#each range(rows) as row}
-		<div class="row" style:grid-template-columns="repeat({cols}, 1fr)">
-			{#each range(cols) as col}
-				<Tile {col} {row} />
+<div class="board" style:grid-template-columns="repeat({cols}, 1fr)">
+	{#each range(cols) as col}
+		<div
+			in:fade={{ duration: col * 100 }}
+			class="row"
+			style:grid-template-rows="repeat({rows}, 1fr)"
+		>
+			{#each range(rows) as row}
+                {#if col == cols - 1 }
+                    <div class="report" >
+                    <Tile {col} {row} />
+                    <button style:right="{(9-cols)*3}%" on:click={() => report(row)}>
+                            <ReportIcon/>
+                    </button>
+        </div>
+                {:else}
+                    <Tile {col} {row} />
+                {/if}
 			{/each}
 		</div>
 	{/each}
 </div>
-<!-- </div> -->
 
-<!-- .board-outer { -->
-<!-- 	display: flex; -->
-<!--        width: 100%; -->
-<!-- 	justify-content: center; -->
-<!-- 	align-items: center; -->
-<!-- 	flex-grow: 1; -->
-<!-- 	overflow: hidden; -->
-<!-- 	overflow-x: hidden; -->
-<!-- 	overflow-y: hidden; -->
-<!-- } -->
-<!---->
-<!-- .board-inner { -->
-<!-- 	display: grid; -->
-<!--        margin: 5% auto; -->
-<!--        height: 70%; -->
-<!--        /* width: 70%; */ -->
-<!-- 	/* grid-template-rows: repeat(6, 1fr); */ -->
-<!-- 	grid-gap: 5px; -->
-<!-- 	padding: 10px; -->
-<!-- 	box-sizing: border-box; -->
-<!-- } -->
-
-<!-- </div> -->
 <style lang="scss">
+    .report {
+        button {
+            float: right;
+            z-index: 2;
+            position: absolute;
+            background: var(--guess-misplaced);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-items: center;
+            border-radius: 50%;
+            aspect-ratio: 1;
+            transition: transform 0.18s ease-in-out;
+        }
+        button:hover {
+            transform: scale(1.3);
+        }
+        display: flex;
+        flex-direction: row;
+    }
 	.row {
 		display: grid;
-		/* grid-template-columns: repeat($cols, 1fr); */
 		grid-gap: 5px;
+		min-width: 0;
+		min-height: 0;
 	}
 	.board {
 		width: 100%;
 		height: 100%;
 		display: grid;
 		grid-gap: 5px;
+		grid-auto-flow: column;
 	}
 </style>

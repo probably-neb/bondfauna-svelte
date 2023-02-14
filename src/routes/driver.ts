@@ -43,7 +43,7 @@ async function generate_answer(length: number) {
             `/api/wordbank?length=${length}`, {
                 method: "GET"
             }).then((response) => response.text());
-    return word;
+        return word;
     }
     else {
         // Dirty little hack to get a valid word. 
@@ -122,15 +122,19 @@ export class GameState {
 		this.row_len = this.answer.length;
 		this.chars = generate_char_map();
 
-		let board = {};
+		let board = Array(this.max_guesses);
 		for (let i = 0; i < this.max_guesses; i++) {
-			board[i] = {};
+			board[i] = Array(this.row_len);
 			for (let j = 0; j < this.row_len; j++) {
 				board[i][j] = defaultTileState();
 			}
 		}
 		this.board = board;
 	}
+
+    word_at_row(row: number):string {
+        return this.board[row].map((tile) => tile.char).join('');
+    }
 
 	step_row() {
 		this.current.row += 1;
