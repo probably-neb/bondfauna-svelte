@@ -3,7 +3,10 @@ import { writable, derived } from 'svelte/store';
 import type { Store } from 'svelte/store';
 import { assets } from "$app/paths";
 import { browser  } from '$app/environment';
+import { getRandomAnswer, isValidGuess } from '$lib/firebase/db';
 
+const generate_answer = getRandomAnswer;
+const is_valid_guess = isValidGuess;
 export const Correctness = Object.freeze({
 /**
 * Green
@@ -37,32 +40,29 @@ function generate_char_map(): { key: string; value: string }[] {
 	return chars;
 }
 
-async function generate_answer(length: number) {
-    if (browser) {
-    const word = await fetch(
-            `/api/wordbank?length=${length}`, {
-                method: "GET"
-            }).then((response) => response.text());
-        return word;
-    }
-    else {
-        // Dirty little hack to get a valid word. 
-        // necessary to have ssr
-        // A new answer is always generated client side
-        return "wait!";
-    }
-}
+// async function generate_answer(length: number) {
+//     if (browser) {
+//         const word = 
+//         return word;
+//     }
+//     else {
+//         // Dirty little hack to get a valid word. 
+//         // necessary to have ssr
+//         // A new answer is always generated client side
+//         return "wait!";
+//     }
+// }
 
 // binary search of the wordbank
 // https://stackoverflow.com/questions/69393873/binary-search-in-array-of-object-javascript
-async function is_valid_guess(target: string): bool {
-    const valid = await fetch(
-        '/api/wordbank', {
-            method: "POST",
-            body: target
-        }).then((response) => response.json());
-    return valid;
-}
+// async function is_valid_guess(target: string): bool {
+//     const valid = await fetch(
+//         '/api/wordbank', {
+//             method: "POST",
+//             body: target
+//         }).then((response) => response.json());
+//     return valid;
+// }
 
 function compute_correctness(answer: string, guess: string ):bool {
     let misplaced = {}
