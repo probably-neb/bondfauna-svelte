@@ -96,3 +96,6 @@ const LENGTHS = [
 
 await writeAll(LENGTHS, MODE);
 console.log('done!');
+
+// TODO: when creating script to get all requested additions and do them
+// make sure to add an 'added: when' field

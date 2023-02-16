@@ -21,11 +21,12 @@
 	$: cols = $game_state.row_len;
 	$: rows = $game_state.max_guesses;
 
-    async function report() {
-        const { current, guessed: {guess,valid}} = get(game_state);
-        // const { guess, valid } = guessed;
-        const action  = valid ? 'remove' : 'add' ;
-        await request_update(guess, action);
+    // TODO: move this to driver
+    async function recheck() {
+        await game_state.update(gs => {
+            gs.check({force: true});
+            gs.guessed.just_did = false;
+        return gs;});
     }
 
     import { getNotificationsContext } from 'svelte-notifications';
@@ -48,6 +49,16 @@
             removeAfter: 3000,
         });
     }
+
+    async function report() {
+        const { current, guessed: {guess,valid}} = get(game_state);
+        const action  = valid ? 'remove' : 'add' ;
+        await request_update(guess, action);
+
+        // TODO: consider the implications of this
+        await recheck();
+    }
+
 
 </script>
 

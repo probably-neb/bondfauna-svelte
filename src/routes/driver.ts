@@ -120,16 +120,7 @@ export class GameState {
 		return this.row_len == this.current.col;
 	}
 
-	async evaluate(): bool {
-		// console.log(Evaluator);
-        const guess = this.current_guess;
-        const valid = await is_valid_guess(guess);
-        console.log("guess:",`"${guess}"`,"valid:",valid);
-
-        this.guessed = {guess,valid,just_did:true};
-
-		if (!valid) return false;
-
+    update_correctness() {
 		const correctness = compute_correctness(this.answer, this.current_guess);
 		let all_correct = true;
 		for (let i = 0; i < this.row_len; i++) {
@@ -152,15 +143,35 @@ export class GameState {
 		}
 		this.done = all_correct;
 
-		return !all_correct;
+		return all_correct;
+    }
+
+	async check_validity(): bool {
+		// console.log(Evaluator);
+        const guess = this.current_guess;
+        const valid = await is_valid_guess(guess);
+        console.log("guess:",`"${guess}"`,"valid:",valid);
+
+        this.guessed = {guess,valid,just_did:true};
+
+        return valid;
 	}
 
-	async check() {
+	async check(options: { force: bool } = { force: false }) {
+        const {force} = options;
+        if (force) {
+            console.log("forcing recheck");
+        }
 		// do nothing if the guess isn't complete
 		if (this.at_end_of_row()) {
 			const on_last_guess = this.current.row == this.max_guesses - 1;
-			const valid_but_not_correct_guess = await this.evaluate();
-			const should_continue = valid_but_not_correct_guess && !on_last_guess;
+            const valid = force || await this.check_validity();
+            let all_correct = false;
+            if (valid) {
+                all_correct = this.update_correctness();
+            }
+            // console.log("valid:",valid,"all_correct:",all_correct,"on_last_guess:",on_last_guess);
+			const should_continue = valid && !all_correct && !on_last_guess;
 			if (should_continue) this.step_row();
 		}
 	}
@@ -217,15 +228,17 @@ async function create_game_store() {
 	// can be cause update to gamestate
 	// easiest impl is to extract the subscribe write from writeable(diff)
 	// and wrap set so it updates gamestate before calling original set
-	//
 	// could also have it update board size store
 
 	return {
 		subscribe,
+        update,
+		reset,
 		send_key: async (chr) => {
             // update uses set behind the scenes anyway
             // as far as I can tell so this is an easy
-            // way to update the game state with async
+            // and not _that_ ugly way way to update
+            // the game state with async
 
             await game_state.send_char(chr);
             set(game_state);
@@ -234,7 +247,6 @@ async function create_game_store() {
 			console.log('Changing difficulty to', diff);
 			await reset(diff);
 		},
-		reset
 		// reset: () => set(0)
 	};
 }
