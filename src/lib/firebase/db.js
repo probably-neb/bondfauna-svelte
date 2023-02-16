@@ -1,8 +1,8 @@
 import { getFirestore } from "firebase/firestore";
 import { app } from './app.js';
-import { doc, getDocs, getDoc, where, query, collection, limit } from "firebase/firestore";
+import { doc, getDocs, getDoc, setDoc, where, query, collection, limit } from "firebase/firestore";
 // Initialize Cloud Firestore and get a reference to the service
-const db = getFirestore(app);
+export const db = getFirestore(app);
 
 function wbOfLength(len) {
     const strLen = '' + len;
@@ -29,7 +29,12 @@ async function getRand(col) {
 
 export async function getRandomAnswer(len) {
     let col = wbOfLength(len);
-    return await getRand(col);
+    const answer = await getRand(col);
+    console.log("recieved random answer:",answer);
+    // FIXME: return err and check for error on callee side
+    // to avoid 18 letter words when the error message is
+    // interpreted as the answer
+    return answer;
 }
 
 export async function isValidGuess(guess) {
@@ -40,9 +45,21 @@ export async function isValidGuess(guess) {
     return d.exists();
 }
 
-export async function report(guess, action) {
+export async function requestUpdate(guess, action) {
+    // TODO: store action in cookies
+    // and allow user to guess words in 
+    // their cookies even if they're not 
+    // in the db yet
     const strLen = '' + guess.length;
     const col = collection(db, 'wordbank', strLen, 'updates');
-    // await setDoc(doc(col), {
-    // let dref = doc(col, guess);
+    const data = {
+        word: guess,
+        action,
+        timestamp: new Date(),
+    }
+    const id = `${action}: ${guess}`
+    // TODO: consider doing an update here 
+    // and incrementing a counter
+    await setDoc(doc(col,id), data);
+    console.log('requestUpdate', data);
 }

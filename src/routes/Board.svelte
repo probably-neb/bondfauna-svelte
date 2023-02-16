@@ -6,12 +6,13 @@
 	import Tile from './Tile.svelte';
 	import { fade } from 'svelte/transition';
     import { get } from 'svelte/store';
+    import { request_update, is_valid_guess } from '$lib/firebase/api';
 
     import ReportIcon from '$lib/report.svelte';
     // TODO: look at crossfade transition, it may 
     // be the key to making changing the board size 
     // happen smoothly
-    // 
+
     // in order to crossfade must matching elems must be on percentage
     // distance from center of grid rounded to int
 
@@ -22,20 +23,11 @@
 
     async function report(row: number) {
         const word = get(game_state).word_at_row(row);
-        const valid = await fetch('/api/wordbank', {
-            method: 'POST',
-            body: word,
-        }).then(res => res.json());
+        // TODO: memoize validity
+        const valid = await is_valid_guess(word);
         const action  = valid ? 'remove' : 'add' ;
 
-        await fetch('/api/report', {
-            method: 'POST',
-            body: JSON.stringify({ word, action}),
-            headers: {
-                'content-type': 'application/json'
-            }
-        });
-        console.log(action,word);
+        await request_update(word, action);
     }
 
 </script>

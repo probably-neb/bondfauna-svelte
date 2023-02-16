@@ -3,10 +3,8 @@ import { writable, derived } from 'svelte/store';
 import type { Store } from 'svelte/store';
 import { assets } from "$app/paths";
 import { browser  } from '$app/environment';
-import { getRandomAnswer, isValidGuess } from '$lib/firebase/db';
+import { generate_answer, is_valid_guess } from '$lib/firebase/api';
 
-const generate_answer = getRandomAnswer;
-const is_valid_guess = isValidGuess;
 export const Correctness = Object.freeze({
 /**
 * Green

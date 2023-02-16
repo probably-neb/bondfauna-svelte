@@ -1,7 +1,21 @@
 const { createRequire } = await import('node:module');
 const require = createRequire(import.meta.url);
-const { db } = await import('./src/lib/firebase/db.js');
+
+import { loadEnv } from 'vite';
+import dotenv from 'dotenv';
+dotenv.config();
+// console.log(process.cwd());
+// const env = loadEnv(process.cwd());
+// console.log({env})
+import { initializeApp } from "firebase/app";
+const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
+const app = initializeApp(firebaseConfig);
+
+import { getFirestore } from "firebase/firestore";
+const db = getFirestore(app);
+
 const fs = await import('firebase/firestore');
+
 
 function* chunks(arr) {
     const n = 500;
@@ -12,48 +26,33 @@ function* chunks(arr) {
 
 let wb = fs.collection(db,'wordbank');
 
-function writeLen(len) {
+function getWriteBatches(len, type) {
     let wb_len = fs.collection(fs.doc(wb, '' + len),'words');
     const rand_id = () => fs.doc(wb_len).id;
 
-    let words = require(`./src/lib/server/answers/${len}.json`);
+    let words = require(`./src/lib/server/${type}/${len}.json`);
     // const words = import(`./src/lib/server/answers/${len}.json`) assert {type: 'json'}
     console.log("creating batches for", words.length,"words of length",len);
     let batches = [];
+    const answer = type === "answers";
     for (let chunk of chunks(words)) {
         let batch = fs.writeBatch(db);
         for (let i = 0; i < chunk.length; i++) {
             const word = chunk[i];
             const data = {
                 rand: rand_id(),
-                answer: true,
             }
-            batch.set(fs.doc(wb_len, word), data);
+            // do not set answer to false, because it will overwrite 
+            // the answers when updating the allowed
+            if (answer) data.answer = true;
+            batch.update(fs.doc(wb_len, word), data);
         }
         batches.push(batch);
-        console.log('saving',batch)
+        // console.log('saving',batch)
     }
     return batches;
 }
 
-const lengths = [
-    4,
-    // 5,
-    6,
-    7,
-    8,
-    9
-];
-
-async function writeAll() {
-    for (let len of lengths) {
-        let batches = writeLen(len);
-        for (let batch of batches) {
-            await batch.commit();
-            console.log('saved batch... success:',batch._comitted,'mutations:',batch._mutations.length);
-        }
-    }
-}
 
 const rand_id = (col) => fs.doc(col).id;
 const words5 = fs.collection(db,'wordbank','5','words');
@@ -71,7 +70,29 @@ async function isValidGuess(guess, col) {
     let d = await fs.getDoc(dref)
     return d.exists();
 }
-await getRand(words5);
 
-console.log(await isValidGuess("crate", words5))
-console.log(await isValidGuess("idontexist", words5))
+async function writeAll(lengths, type) {
+    for (let len of lengths) {
+        let batches = getWriteBatches(len, type);
+        for (let batch of batches) {
+            let success = true;
+            await batch.commit().catch(e => {success = e;});;
+            console.log('saved batch of',len,'words... success:', success,'mutations:',batch._mutations.length);
+        }
+    }
+}
+
+const MODE = "allowed";
+// NOTE: to specify path can change this to map
+// and use for(const [k,v] of LENGTHS)
+const LENGTHS = [
+    // 4,
+    5,
+    // 6,
+    // 7,
+    // 8,
+    // 9
+];
+
+await writeAll(LENGTHS, MODE);
+console.log('done!');
