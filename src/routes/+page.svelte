@@ -29,10 +29,12 @@
 			.querySelector(`[data-key="${event.key}" i]`)
 			?.dispatchEvent(new MouseEvent('click', { cancelable: true }));
 	}
+    import  Notifications from 'svelte-notifications';
 </script>
 
 <svelte:window on:keydown={keydown} />
 
+<Notifications>
 <div class="game-outer-container">
 	<Header {changeTheme} />
 	<div class="game">
@@ -44,6 +46,7 @@
 		</div>
 	</div>
 </div>
+</Notifications>
 
 <svelte:head>
 	{#if theme == 'dark'}

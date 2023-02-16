@@ -34,33 +34,8 @@ function generate_char_map(): { key: string; value: string }[] {
 	for (let char of alphabet) {
 		chars[char] = defaultCorrectness();
 	}
-	// const map: Map<string, string> = new Map(Array.from(alphabet).map(c => [c,"empty"]));
 	return chars;
 }
-
-// async function generate_answer(length: number) {
-//     if (browser) {
-//         const word = 
-//         return word;
-//     }
-//     else {
-//         // Dirty little hack to get a valid word. 
-//         // necessary to have ssr
-//         // A new answer is always generated client side
-//         return "wait!";
-//     }
-// }
-
-// binary search of the wordbank
-// https://stackoverflow.com/questions/69393873/binary-search-in-array-of-object-javascript
-// async function is_valid_guess(target: string): bool {
-//     const valid = await fetch(
-//         '/api/wordbank', {
-//             method: "POST",
-//             body: target
-//         }).then((response) => response.json());
-//     return valid;
-// }
 
 function compute_correctness(answer: string, guess: string ):bool {
     let misplaced = {}
@@ -114,6 +89,7 @@ export class GameState {
 	row_len: number;
 	board: Board;
 	chars;
+    guessed = {just_did: false,valid: false,guess:""};
 
 	constructor(answer: string) {
 		this.answer = answer;
@@ -149,6 +125,8 @@ export class GameState {
         const guess = this.current_guess;
         const valid = await is_valid_guess(guess);
         console.log("guess:",`"${guess}"`,"valid:",valid);
+
+        this.guessed = {guess,valid,just_did:true};
 
 		if (!valid) return false;
 
@@ -191,12 +169,16 @@ export class GameState {
 		if (ch == 'enter') {
 			await this.check();
 		} else if (ch == 'backspace' && !this.done) {
+            this.guessed.just_did = false;
 			const row = Math.max(0, this.current.row);
 			const col = Math.max(0, this.current.col - 1);
 			this.board[row][col].char = ' ';
 			this.current.col = col;
 			this.current_guess = this.current_guess.slice(0, -1);
 		} else if (!this.at_end_of_row()) {
+            if (this.current.col == 0) {
+                this.guessed.just_did = false;
+            }
 			this.current_guess += ch;
 			this.board[this.current.row][this.current.col].char = ch;
 			this.current.col += 1;

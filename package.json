@@ -36,6 +36,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@googleapis/sheets": "^4.0.1"
+		"svelte-notifications": "^0.9.98"
 	}
 }

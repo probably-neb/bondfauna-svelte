@@ -7,7 +7,7 @@
 	import { fade } from 'svelte/transition';
     import { get } from 'svelte/store';
     import { request_update, is_valid_guess } from '$lib/firebase/api';
-
+    
     import ReportIcon from '$lib/report.svelte';
     // TODO: look at crossfade transition, it may 
     // be the key to making changing the board size 
@@ -21,13 +21,32 @@
 	$: cols = $game_state.row_len;
 	$: rows = $game_state.max_guesses;
 
-    async function report(row: number) {
-        const word = get(game_state).word_at_row(row);
-        // TODO: memoize validity
-        const valid = await is_valid_guess(word);
+    async function report() {
+        const { current, guessed: {guess,valid}} = get(game_state);
+        // const { guess, valid } = guessed;
         const action  = valid ? 'remove' : 'add' ;
+        await request_update(guess, action);
+    }
 
-        await request_update(word, action);
+    import { getNotificationsContext } from 'svelte-notifications';
+    const { addNotification } = getNotificationsContext();
+
+    let just_guessed_invalid: boolean;
+
+    $: {
+        const {valid,just_did} = $game_state.guessed;
+        just_guessed_invalid = just_did && !valid;
+    }
+
+    // TODO: make custom notification object with button to report 
+    // word as missing
+    $: if (just_guessed_invalid) {
+        addNotification({
+            text: 'Invalid Guess. Click the yellow warning icon to report the word as missing!',
+            type: 'warning',
+            position: 'top-right',
+            removeAfter: 3000,
+        });
     }
 
 </script>
@@ -43,9 +62,11 @@
                 {#if col == cols - 1 }
                     <div class="report" >
                     <Tile {col} {row} />
-                    <button style:right="{(9-cols)*3}%" on:click={() => report(row)}>
+                    {#if $game_state.current.row == row && just_guessed_invalid }
+                    <button style:right="{(9-cols)*3}%" on:click={report}>
                             <ReportIcon/>
                     </button>
+                    {/if}
         </div>
                 {:else}
                     <Tile {col} {row} />

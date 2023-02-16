@@ -28,8 +28,21 @@ export async function is_valid_guess(guess) {
     return false;
 }
 
+export function update_message(word,action) {
+    let action_msg,dir;
+    if (action === 'add') {
+        action_msg = 'addition';
+        dir = 'to';
+    } else {
+        action_msg='removal';
+        dir = 'from';
+    }
+    const msg = ['Requesting',action_msg, 'of',word,dir,'wordbank'].join(' ');
+
+    return msg;
+}
+
 export async function request_update(word, action) {
-    console.log('asking server to', action, word,action === 'add' ? 'to' : 'from','wordbank');
     await fetch('/api/wordbank/report',{
         method: 'POST',
         body: JSON.stringify({word, action}),
@@ -37,4 +50,5 @@ export async function request_update(word, action) {
     "content-type": 'application/json',
         }
     });
+    console.log(update_message(word,action));
 }
