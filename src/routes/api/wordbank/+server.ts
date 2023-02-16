@@ -10,7 +10,8 @@ export async function GET( {url} ) {
     return new Response(word);
 }
 
-// TODO: merge post with get request
+// TODO: merge post with get request and make post accept 
+// new words to add to the database
 
 /* @type {import('@sveltejs/kit').RequestHandler}} */
 export async function POST( { request } ) {

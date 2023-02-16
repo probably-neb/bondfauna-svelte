@@ -43,6 +43,7 @@ export function update_message(word,action) {
 }
 
 export async function request_update(word, action) {
+    // TODO: consider adding geolocation from api https://www.iplocation.net/
     await fetch('/api/wordbank/report',{
         method: 'POST',
         body: JSON.stringify({word, action}),
