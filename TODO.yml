@@ -11,4 +11,5 @@ TODO:
     - better storage of words:
       - client gets random chunk and chooses word from it?
       - client gets (single) answer from server each time
+      - https://svelte.dev/repl/814c27da2e1344f9b4f205a93e02559f?version=3.38.1
 

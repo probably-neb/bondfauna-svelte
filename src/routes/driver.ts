@@ -107,6 +107,11 @@ export interface Board {
 	[index: number]: Row;
 }
 
+// TODO: 
+// A: keep track of history
+// B: benchmark wether having 'active' row
+// and having tiles check if they are in active 
+// row is faster
 export class GameState {
 	max_guesses: number = 6;
 	current_guess: string = '';
@@ -159,7 +164,6 @@ export class GameState {
 			// Desired functionality here is that characters are never
 			// "downgraded" i.e. misplaced chars can be marked correct,
 			// but not the other way around
-			//
 			// Misplaced chars will only ever be marked as misplaced or
 			// correct so that relationship can be ignored.
 			// That just leaves checking if it is already correct
@@ -233,7 +237,6 @@ async function create_game_store() {
 	// can be cause update to gamestate
 	// easiest impl is to extract the subscribe write from writeable(diff)
 	// and wrap set so it updates gamestate before calling original set
-	//
 	// could also have it update board size store
 
 	return {
@@ -251,7 +254,6 @@ async function create_game_store() {
 			await reset(diff);
 		},
 		reset
-		// reset: () => set(0)
 	};
 }
 
