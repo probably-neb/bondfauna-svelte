@@ -2,19 +2,13 @@
 <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
 <!-- <?xml version="1.0" encoding="iso-8859-1"?> -->
 <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-	 viewBox="0 0 40 40" xml:space="preserve">
+<script>
+    import Icon from './icon.svelte';
+</script>
+
+<Icon xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 40" xml:space="preserve">
 	<path d="M16.22,23.714l-4.85-4.848c0,0,17.822-17.855,19.252-18.787c0,0,2.465-0.664,2.615,1.855
 		C31.49,5.112,16.22,23.714,16.22,23.714z"/>
 	<path d="M4.48,36.495c0,0-0.682-5.465,4.374-5.465c5.058,0,6.185-6.133,6.185-6.133l-4.85-4.851
 		C-0.672,24.827,4.48,36.495,4.48,36.495z"/>
-</svg>
-
-<style>
-    svg {
-        width: 24px;
-        height: 24px;
-        fill: currentColor;
-        stroke: currentColor;
-    }
-</style>
+</Icon>

@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { game_state } from './driver';
-	import ResetIcon from '$lib/reset.svg?component';
-    import PaintIcon from '$lib/paintbrush.svelte';
-    import LenIcon from '$lib/lengths.svelte';
+    // TODO: make header folder either in routes or $lib
+    // and move icons there as well as implement 
+    // this: https://svelte.dev/repl/814c27da2e1344f9b4f205a93e02559f?version=3.38.1k
+    // multilevel dropdown menu if needed
+	import ResetIcon from '$lib/icons/reset.svelte';
+    import PaintIcon from '$lib/icons/paintbrush.svelte';
+    import LenIcon from '$lib/icons/lengths.svelte';
 
 	export let changeTheme;
 
@@ -37,13 +41,13 @@
 
 <div class="appHeader">
 	<div class="menuLeft">
-		<label for="difficulty"><LenIcon color="var(--text-color)"/></label>
+		<label for="difficulty"><LenIcon/></label>
 		<select id="difficulty" bind:value={difficulty}>
 			{#each difficulties as d}
 				<option value={d}>{d}</option>
 			{/each}
 		</select>
-        <label for="theme"><PaintIcon color="var(--text-color)" /></label>
+        <label for="theme"><PaintIcon/></label>
 		<select id="theme" bind:value={theme}>
 			{#each themes as t}
 				<option value={t}>{t}</option>
@@ -53,7 +57,7 @@
 	<div class="appHeader-title">Jordle</div>
 	<div class="menuRight">
 		<button on:click={reset} class="icon">
-			<ResetIcon width="24px" height="24px" color="var(--text-color)" />
+			<ResetIcon/>
 		</button>
 	</div>
 </div>
