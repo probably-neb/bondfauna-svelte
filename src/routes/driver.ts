@@ -1,26 +1,26 @@
 import { range } from './utils';
 import { writable, derived } from 'svelte/store';
 import type { Store } from 'svelte/store';
-import { assets } from "$app/paths";
-import { browser  } from '$app/environment';
+import { assets } from '$app/paths';
+import { browser } from '$app/environment';
 import { generate_answer, is_valid_guess } from '$lib/firebase/api';
 
 export const Correctness = Object.freeze({
-/**
-* Green
-*/
-// correct:3,3:"correct",
-correct:"correct",
-/**
-* Yellow
-*/
-// misplaced:2,2:"misplaced",
-misplaced:"misplaced",
-/**
-* Gray
-*/
-// wrong:1,1:"wrong", 
-wrong:"wrong", 
+	/**
+	 * Green
+	 */
+	// correct:3,3:"correct",
+	correct: 'correct',
+	/**
+	 * Yellow
+	 */
+	// misplaced:2,2:"misplaced",
+	misplaced: 'misplaced',
+	/**
+	 * Gray
+	 */
+	// wrong:1,1:"wrong",
+	wrong: 'wrong'
 });
 
 export function defaultCorrectness() {
@@ -37,30 +37,30 @@ function generate_char_map(): { key: string; value: string }[] {
 	return chars;
 }
 
-function compute_correctness(answer: string, guess: string ):bool {
-    let misplaced = {}
-    // assumes answer and guess are the same length
-    const length = guess.length;
+function compute_correctness(answer: string, guess: string): bool {
+	let misplaced = {};
+	// assumes answer and guess are the same length
+	const length = guess.length;
 
-    let correctness = Array(length).fill(Correctness.wrong);
-    for (let i = 0; i < length; i++) {
-        if (answer[i] === guess[i]) {
-            correctness[i] = Correctness.correct;
-        } else {
-            const count = misplaced[answer[i]] ?? 0;
-            misplaced[answer[i]] = count + 1;
-        }
-    }
+	let correctness = Array(length).fill(Correctness.wrong);
+	for (let i = 0; i < length; i++) {
+		if (answer[i] === guess[i]) {
+			correctness[i] = Correctness.correct;
+		} else {
+			const count = misplaced[answer[i]] ?? 0;
+			misplaced[answer[i]] = count + 1;
+		}
+	}
 
-    for (let i = 0; i < length; i++) {
-        const times_misplaced = misplaced[guess[i]] ?? 0;
-        if (correctness[i] === Correctness.wrong && times_misplaced > 0) {
-            correctness[i] = Correctness.misplaced;
-            misplaced[guess[i]] = times_misplaced - 1;
-        }
-    }
+	for (let i = 0; i < length; i++) {
+		const times_misplaced = misplaced[guess[i]] ?? 0;
+		if (correctness[i] === Correctness.wrong && times_misplaced > 0) {
+			correctness[i] = Correctness.misplaced;
+			misplaced[guess[i]] = times_misplaced - 1;
+		}
+	}
 
-    return correctness;
+	return correctness;
 }
 
 export interface TileState {
@@ -80,10 +80,10 @@ export interface Board {
 	[index: number]: Row;
 }
 
-// TODO: 
+// TODO:
 // A: keep track of history
 // B: benchmark wether having 'active' row
-// and having tiles check if they are in active 
+// and having tiles check if they are in active
 // row is faster
 export class GameState {
 	max_guesses: number = 6;
@@ -94,8 +94,8 @@ export class GameState {
 	row_len: number;
 	board: Board;
 	chars;
-    guessed = {just_did: false,valid: false,guess:""};
-    won: bool = false;
+	guessed = { just_did: false, valid: false, guess: '' };
+	won: bool = false;
 
 	constructor(answer: string) {
 		this.answer = answer;
@@ -112,9 +112,9 @@ export class GameState {
 		this.board = board;
 	}
 
-    word_at_row(row: number):string {
-        return this.board[row].map((tile) => tile.char).join('');
-    }
+	word_at_row(row: number): string {
+		return this.board[row].map((tile) => tile.char).join('');
+	}
 
 	step_row() {
 		this.current.row += 1;
@@ -126,7 +126,7 @@ export class GameState {
 		return this.row_len == this.current.col;
 	}
 
-    update_correctness() {
+	update_correctness() {
 		const correctness = compute_correctness(this.answer, this.current_guess);
 		let all_correct = true;
 		for (let i = 0; i < this.row_len; i++) {
@@ -148,41 +148,40 @@ export class GameState {
 		}
 
 		return all_correct;
-    }
+	}
 
 	async check_validity(): bool {
 		// console.log(Evaluator);
-        const guess = this.current_guess;
-        const valid = await is_valid_guess(guess);
-        console.log("guess:",`"${guess}"`,"valid:",valid);
+		const guess = this.current_guess;
+		const valid = await is_valid_guess(guess);
+		console.log('guess:', `"${guess}"`, 'valid:', valid);
 
-        this.guessed = {guess,valid,just_did:true};
+		this.guessed = { guess, valid, just_did: true };
 
-        return valid;
+		return valid;
 	}
 
 	async check(options: { force: bool } = { force: false }) {
-        const {force} = options;
-        if (force) {
-            console.log("forcing recheck");
-        }
+		const { force } = options;
+		if (force) {
+			console.log('forcing recheck');
+		}
 		// do nothing if the guess isn't complete
 		if (this.at_end_of_row()) {
 			const on_last_guess = this.current.row == this.max_guesses - 1;
-            const valid = force || await this.check_validity();
-            let all_correct = false;
-            if (valid) {
-                all_correct = this.update_correctness();
-            }
-            // console.log("valid:",valid,"all_correct:",all_correct,"on_last_guess:",on_last_guess);
+			const valid = force || (await this.check_validity());
+			let all_correct = false;
+			if (valid) {
+				all_correct = this.update_correctness();
+			}
+			// console.log("valid:",valid,"all_correct:",all_correct,"on_last_guess:",on_last_guess);
 			const should_continue = valid && !all_correct && !on_last_guess;
-			if (should_continue){
-                this.step_row();
-            }
-            else if (valid && on_last_guess) {
-                this.done = true;
-                this.won = all_correct;
-            }
+			if (should_continue) {
+				this.step_row();
+			} else if (valid && on_last_guess) {
+				this.done = true;
+				this.won = all_correct;
+			}
 		}
 	}
 
@@ -190,16 +189,16 @@ export class GameState {
 		if (ch == 'enter') {
 			await this.check();
 		} else if (ch == 'backspace' && !this.done) {
-            this.guessed.just_did = false;
+			this.guessed.just_did = false;
 			const row = Math.max(0, this.current.row);
 			const col = Math.max(0, this.current.col - 1);
 			this.board[row][col].char = ' ';
 			this.current.col = col;
 			this.current_guess = this.current_guess.slice(0, -1);
 		} else if (!this.at_end_of_row()) {
-            if (this.current.col == 0) {
-                this.guessed.just_did = false;
-            }
+			if (this.current.col == 0) {
+				this.guessed.just_did = false;
+			}
 			this.current_guess += ch;
 			this.board[this.current.row][this.current.col].char = ch;
 			this.current.col += 1;
@@ -216,22 +215,22 @@ async function create_game_state(length) {
 }
 
 async function create_game_store() {
-    let current_length = 5;
+	let current_length = 5;
 	let game_state = await create_game_state(current_length);
 
 	const { subscribe, set, update } = writable(game_state);
 
-	async function reset(length=current_length) {
+	async function reset(length = current_length) {
 		// if (!length) {
 		// 	// this is definitely a hack
-  //           length = game_state.row_len;
+		//           length = game_state.row_len;
 		// }
-        let new_gamestate = await create_game_state(length);
-        game_state = new_gamestate;
-        set(game_state);
+		let new_gamestate = await create_game_state(length);
+		game_state = new_gamestate;
+		set(game_state);
 
 		// let new_gamestate = await create_game_state(length);
-  //       game_state = new_gamestate;
+		//       game_state = new_gamestate;
 		// set(new_gamestate);
 	}
 
@@ -243,24 +242,24 @@ async function create_game_store() {
 
 	return {
 		subscribe,
-        update,
+		update,
 		reset,
 		send_key: async (chr) => {
-            // update uses set behind the scenes anyway
-            // as far as I can tell so this is an easy
-            // and not _that_ ugly way way to update
-            // the game state with async
+			// update uses set behind the scenes anyway
+			// as far as I can tell so this is an easy
+			// and not _that_ ugly way way to update
+			// the game state with async
 
-            if (game_state.done) {
-                return
-            }
-            await game_state.send_char(chr);
-            set(game_state);
+			if (game_state.done) {
+				return;
+			}
+			await game_state.send_char(chr);
+			set(game_state);
 		},
 		change_difficulty: async (diff) => {
 			console.log('Changing difficulty to', diff);
 			await reset(diff);
-		},
+		}
 		// reset: () => set(0)
 	};
 }

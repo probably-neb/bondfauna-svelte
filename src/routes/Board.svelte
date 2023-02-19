@@ -62,18 +62,18 @@
 		// TODO: consider the implications of this
 		await recheck();
 	}
-    $: if ($game_state.done) {
-        console.log('game over');
-        const won = $game_state.won;
-        const type = won ? 'success' : 'error';
-        const text = won ? 'You Win!' : 'Game Over!\nThe answer was: ' + $game_state.answer;
-        addNotification({
-            text,
-            type,
-            position: 'top-center',
-            removeAfter: 100000
-        });
-    }
+	$: if ($game_state.done) {
+		console.log('game over');
+		const won = $game_state.won;
+		const type = won ? 'success' : 'error';
+		const text = won ? 'You Win!' : 'Game Over!\nThe answer was: ' + $game_state.answer;
+		addNotification({
+			text,
+			type,
+			position: 'top-center',
+			removeAfter: 100000
+		});
+	}
 </script>
 
 <div class="board" style:grid-template-columns="repeat({cols}, 1fr)">

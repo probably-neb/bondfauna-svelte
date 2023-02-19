@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { game_state } from './driver';
-    // multilevel dropdown menu if needed
-    // https://svelte.dev/repl/814c27da2e1344f9b4f205a93e02559f?version=3.38.1k
+	// multilevel dropdown menu if needed
+	// https://svelte.dev/repl/814c27da2e1344f9b4f205a93e02559f?version=3.38.1k
 	import ResetIcon from '$lib/icons/reset.svelte';
-    import PaintIcon from '$lib/icons/paintbrush.svelte';
-    import LenIcon from '$lib/icons/lengths.svelte';
+	import PaintIcon from '$lib/icons/paintbrush.svelte';
+	import LenIcon from '$lib/icons/lengths.svelte';
 
 	export let changeTheme;
 
@@ -31,24 +31,24 @@
 		difficulty_changed = true;
 	}
 
-    import { getNotificationsContext } from 'svelte-notifications';
-    const { clearNotifications } = getNotificationsContext();
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { clearNotifications } = getNotificationsContext();
 	async function reset() {
 		console.log('reset pressed');
-        clearNotifications();
+		clearNotifications();
 		await game_state.reset(difficulty);
 	}
 </script>
 
 <div class="appHeader">
 	<div class="menuLeft">
-		<label for="difficulty"><LenIcon/></label>
+		<label for="difficulty"><LenIcon /></label>
 		<select id="difficulty" bind:value={difficulty}>
 			{#each difficulties as d}
 				<option value={d}>{d}</option>
 			{/each}
 		</select>
-        <label for="theme"><PaintIcon/></label>
+		<label for="theme"><PaintIcon /></label>
 		<select id="theme" bind:value={theme}>
 			{#each themes as t}
 				<option value={t}>{t}</option>
@@ -57,16 +57,16 @@
 	</div>
 	<div class="appHeader-title">Jordle</div>
 	<div class="menuRight">
-        <!-- This is a hack to prevent reset from being called twice -->
-        {#if $game_state.current.row > 0 || $game_state.current.col > 0}
-		<button on:click|once={reset} class="icon">
-			<ResetIcon/>
-		</button>
-        {:else}
-		<div class="icon">
-			<ResetIcon />
-		</div>
-        {/if}
+		<!-- This is a hack to prevent reset from being called twice -->
+		{#if $game_state.current.row > 0 || $game_state.current.col > 0}
+			<button on:click|once={reset} class="icon">
+				<ResetIcon />
+			</button>
+		{:else}
+			<div class="icon">
+				<ResetIcon />
+			</div>
+		{/if}
 	</div>
 </div>
 
