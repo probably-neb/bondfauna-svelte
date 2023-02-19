@@ -29,8 +29,11 @@
 		difficulty_changed = true;
 	}
 
+    import { getNotificationsContext } from 'svelte-notifications';
+    const { clearNotifications } = getNotificationsContext();
 	async function reset() {
 		console.log('reset pressed');
+        clearNotifications();
 		await game_state.reset(difficulty);
 	}
 </script>
