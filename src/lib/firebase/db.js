@@ -45,21 +45,36 @@ export async function isValidGuess(guess) {
     return d.exists();
 }
 
-export async function requestUpdate(guess, action) {
+export async function requestUpdate(word, action) {
     // TODO: store action in cookies
     // and allow user to guess words in 
     // their cookies even if they're not 
     // in the db yet
-    const strLen = '' + guess.length;
-    const col = collection(db, 'wordbank', strLen, 'updates');
-    const data = {
-        word: guess,
+    const strLen = '' + word.length;
+    // the record of this update
+    const record = collection(db, 'wordbank', strLen, 'updates');
+    const recordId = `${action}: ${word}`
+    const recordData = {
+        word,
         action,
         timestamp: new Date(),
     }
-    const id = `${action}: ${guess}`
     // TODO: consider doing an update here 
     // and incrementing a counter
-    await setDoc(doc(col,id), data);
-    console.log('requestUpdate', data);
+    // also getting geographical information from ip?
+    // just because it would be interesting to see where
+    // people were reporting words
+
+    const recordTransaction = setDoc(doc(record,recordId), recordData);
+
+    // the actual update (actually adds this word to the database)
+    const update = collection(db,'wordbank',strLen, 'words');
+    const updateData = {
+        answer: false,
+        rand: randomId(update)
+    }
+    const updateTransaction = setDoc(doc(update, word), updateData)
+
+    await Promise.all([recordTransaction, updateTransaction])
+    // console.log('requestUpdate', recordData);
 }
