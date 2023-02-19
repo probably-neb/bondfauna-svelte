@@ -2,7 +2,7 @@
 	import Header from './Header.svelte';
 	import Board from './Board.svelte';
 	import Keyboard from './Keyboard.svelte';
-	import { board_size } from './driver';
+	import { board_size, game_state} from './driver';
 
 	function calculateBoardSize(rows: number, cols: number) {
 		let dim = rows > cols ? 'height' : 'width';
@@ -29,10 +29,13 @@
 			.querySelector(`[data-key="${event.key}" i]`)
 			?.dispatchEvent(new MouseEvent('click', { cancelable: true }));
 	}
+    import  Notifications from 'svelte-notifications';
+    // https://github.com/keenethics/svelte-notifications
 </script>
 
 <svelte:window on:keydown={keydown} />
 
+<Notifications>
 <div class="game-outer-container">
 	<Header {changeTheme} />
 	<div class="game">
@@ -44,6 +47,7 @@
 		</div>
 	</div>
 </div>
+</Notifications>
 
 <svelte:head>
 	{#if theme == 'dark'}

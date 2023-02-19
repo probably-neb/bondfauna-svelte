@@ -3,6 +3,7 @@ import { writable, derived } from 'svelte/store';
 import type { Store } from 'svelte/store';
 import { assets } from "$app/paths";
 import { browser  } from '$app/environment';
+import { generate_answer, is_valid_guess } from '$lib/firebase/api';
 
 export const Correctness = Object.freeze({
 /**
@@ -33,35 +34,7 @@ function generate_char_map(): { key: string; value: string }[] {
 	for (let char of alphabet) {
 		chars[char] = defaultCorrectness();
 	}
-	// const map: Map<string, string> = new Map(Array.from(alphabet).map(c => [c,"empty"]));
 	return chars;
-}
-
-async function generate_answer(length: number) {
-    if (browser) {
-    const word = await fetch(
-            `/api/wordbank?length=${length}`, {
-                method: "GET"
-            }).then((response) => response.text());
-    return word;
-    }
-    else {
-        // Dirty little hack to get a valid word. 
-        // necessary to have ssr
-        // A new answer is always generated client side
-        return "wait!";
-    }
-}
-
-// binary search of the wordbank
-// https://stackoverflow.com/questions/69393873/binary-search-in-array-of-object-javascript
-async function is_valid_guess(target: string): bool {
-    const valid = await fetch(
-        '/api/wordbank', {
-            method: "POST",
-            body: target
-        }).then((response) => response.json());
-    return valid;
 }
 
 function compute_correctness(answer: string, guess: string ):bool {
@@ -121,21 +94,27 @@ export class GameState {
 	row_len: number;
 	board: Board;
 	chars;
+    guessed = {just_did: false,valid: false,guess:""};
+    won: bool = false;
 
 	constructor(answer: string) {
 		this.answer = answer;
 		this.row_len = this.answer.length;
 		this.chars = generate_char_map();
 
-		let board = {};
+		let board = Array(this.max_guesses);
 		for (let i = 0; i < this.max_guesses; i++) {
-			board[i] = {};
+			board[i] = Array(this.row_len);
 			for (let j = 0; j < this.row_len; j++) {
 				board[i][j] = defaultTileState();
 			}
 		}
 		this.board = board;
 	}
+
+    word_at_row(row: number):string {
+        return this.board[row].map((tile) => tile.char).join('');
+    }
 
 	step_row() {
 		this.current.row += 1;
@@ -147,14 +126,7 @@ export class GameState {
 		return this.row_len == this.current.col;
 	}
 
-	async evaluate(): bool {
-		// console.log(Evaluator);
-        const guess = this.current_guess;
-        const valid = await is_valid_guess(guess);
-        console.log("guess:",`"${guess}"`,"valid:",valid);
-
-		if (!valid) return false;
-
+    update_correctness() {
 		const correctness = compute_correctness(this.answer, this.current_guess);
 		let all_correct = true;
 		for (let i = 0; i < this.row_len; i++) {
@@ -174,18 +146,43 @@ export class GameState {
 
 			all_correct = all_correct && c === 'correct';
 		}
-		this.done = all_correct;
 
-		return !all_correct;
+		return all_correct;
+    }
+
+	async check_validity(): bool {
+		// console.log(Evaluator);
+        const guess = this.current_guess;
+        const valid = await is_valid_guess(guess);
+        console.log("guess:",`"${guess}"`,"valid:",valid);
+
+        this.guessed = {guess,valid,just_did:true};
+
+        return valid;
 	}
 
-	async check() {
+	async check(options: { force: bool } = { force: false }) {
+        const {force} = options;
+        if (force) {
+            console.log("forcing recheck");
+        }
 		// do nothing if the guess isn't complete
 		if (this.at_end_of_row()) {
 			const on_last_guess = this.current.row == this.max_guesses - 1;
-			const valid_but_not_correct_guess = await this.evaluate();
-			const should_continue = valid_but_not_correct_guess && !on_last_guess;
-			if (should_continue) this.step_row();
+            const valid = force || await this.check_validity();
+            let all_correct = false;
+            if (valid) {
+                all_correct = this.update_correctness();
+            }
+            // console.log("valid:",valid,"all_correct:",all_correct,"on_last_guess:",on_last_guess);
+			const should_continue = valid && !all_correct && !on_last_guess;
+			if (should_continue){
+                this.step_row();
+            }
+            else {
+                this.done = true;
+                this.won = all_correct;
+            }
 		}
 	}
 
@@ -193,12 +190,16 @@ export class GameState {
 		if (ch == 'enter') {
 			await this.check();
 		} else if (ch == 'backspace' && !this.done) {
+            this.guessed.just_did = false;
 			const row = Math.max(0, this.current.row);
 			const col = Math.max(0, this.current.col - 1);
 			this.board[row][col].char = ' ';
 			this.current.col = col;
 			this.current_guess = this.current_guess.slice(0, -1);
 		} else if (!this.at_end_of_row()) {
+            if (this.current.col == 0) {
+                this.guessed.just_did = false;
+            }
 			this.current_guess += ch;
 			this.board[this.current.row][this.current.col].char = ch;
 			this.current.col += 1;
@@ -215,22 +216,23 @@ async function create_game_state(length) {
 }
 
 async function create_game_store() {
-	let game_state = await create_game_state(5);
+    let current_length = 5;
+	let game_state = await create_game_state(current_length);
 
 	const { subscribe, set, update } = writable(game_state);
 
-	async function reset(length) {
-		if (!length) {
-			// this is definitely a hack
-			update((gs) => {
-				length = gs.row_len;
-				return gs;
-			});
-		}
-
-		let new_gamestate = await create_game_state(length);
+	async function reset(length=current_length) {
+		// if (!length) {
+		// 	// this is definitely a hack
+  //           length = game_state.row_len;
+		// }
+        let new_gamestate = await create_game_state(length);
         game_state = new_gamestate;
-		set(game_state);
+        set(game_state);
+
+		// let new_gamestate = await create_game_state(length);
+  //       game_state = new_gamestate;
+		// set(new_gamestate);
 	}
 
 	// IDEA: can gamestate subscribe to writeable(difficulty) so difficulty
@@ -241,10 +243,13 @@ async function create_game_store() {
 
 	return {
 		subscribe,
+        update,
+		reset,
 		send_key: async (chr) => {
             // update uses set behind the scenes anyway
             // as far as I can tell so this is an easy
-            // way to update the game state with async
+            // and not _that_ ugly way way to update
+            // the game state with async
 
             await game_state.send_char(chr);
             set(game_state);
@@ -253,7 +258,7 @@ async function create_game_store() {
 			console.log('Changing difficulty to', diff);
 			await reset(diff);
 		},
-		reset
+		// reset: () => set(0)
 	};
 }
 

@@ -19,9 +19,11 @@
 		"@sveltejs/kit": "^1.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
+		"dotenv": "^16.0.3",
 		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte3": "^4.0.0",
+		"firebase": "^9.17.1",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.8.1",
 		"sass": "^1.57.1",
@@ -32,5 +34,8 @@
 		"vite": "^4.0.0",
 		"vite-plugin-top-level-await": "^1.2.4"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"svelte-notifications": "^0.9.98"
+	}
 }

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { board, game_state, defaultTileState } from './driver';
 	import type { TileState, GameState } from './driver';
+    import { fade } from 'svelte/transition';
 	export let col: number, row: number;
 
-	let state: TileState = defaultTileState();
+	let state: TileState;
 
-	$: state = $board[row][col];
+	$: state = $board[row][col] ?? defaultTileState();
 </script>
 
 <div class="tile" data-guess={state.correctness}>{state.char}</div>
