@@ -90,6 +90,7 @@ export class GameState {
 	board: Board;
 	chars;
     guessed = {just_did: false,valid: false,guess:""};
+    won: bool = false;
 
 	constructor(answer: string) {
 		this.answer = answer;
@@ -141,7 +142,6 @@ export class GameState {
 
 			all_correct = all_correct && c === 'correct';
 		}
-		this.done = all_correct;
 
 		return all_correct;
     }
@@ -172,7 +172,13 @@ export class GameState {
             }
             // console.log("valid:",valid,"all_correct:",all_correct,"on_last_guess:",on_last_guess);
 			const should_continue = valid && !all_correct && !on_last_guess;
-			if (should_continue) this.step_row();
+			if (should_continue){
+                this.step_row();
+            }
+            else {
+                this.done = true;
+                this.won = all_correct;
+            }
 		}
 	}
 

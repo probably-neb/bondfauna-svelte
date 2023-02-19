@@ -2,7 +2,7 @@
 	import Header from './Header.svelte';
 	import Board from './Board.svelte';
 	import Keyboard from './Keyboard.svelte';
-	import { board_size } from './driver';
+	import { board_size, game_state} from './driver';
 
 	function calculateBoardSize(rows: number, cols: number) {
 		let dim = rows > cols ? 'height' : 'width';
