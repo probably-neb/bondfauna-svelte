@@ -206,22 +206,23 @@ async function create_game_state(length) {
 }
 
 async function create_game_store() {
-	let game_state = await create_game_state(5);
+    let current_length = 5;
+	let game_state = await create_game_state(current_length);
 
 	const { subscribe, set, update } = writable(game_state);
 
-	async function reset(length) {
-		if (!length) {
-			// this is definitely a hack
-			update((gs) => {
-				length = gs.row_len;
-				return gs;
-			});
-		}
-
-		let new_gamestate = await create_game_state(length);
+	async function reset(length=current_length) {
+		// if (!length) {
+		// 	// this is definitely a hack
+  //           length = game_state.row_len;
+		// }
+        let new_gamestate = await create_game_state(length);
         game_state = new_gamestate;
-		set(game_state);
+        set(game_state);
+
+		// let new_gamestate = await create_game_state(length);
+  //       game_state = new_gamestate;
+		// set(new_gamestate);
 	}
 
 	// IDEA: can gamestate subscribe to writeable(difficulty) so difficulty
