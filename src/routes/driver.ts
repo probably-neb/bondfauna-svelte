@@ -178,7 +178,7 @@ export class GameState {
 			const should_continue = valid && !all_correct && !on_last_guess;
 			if (should_continue) {
 				this.step_row();
-			} else if (valid && on_last_guess) {
+			} else if (valid) {
 				this.done = true;
 				this.won = all_correct;
 			}
