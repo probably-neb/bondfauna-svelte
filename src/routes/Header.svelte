@@ -51,11 +51,11 @@
 		</select>
 	</div>
 	<div class="appHeader-title">Jordle</div>
-	<div class="menuRight">
-		<button on:click={reset} class="icon">
-			<ResetIcon width="24px" height="24px" color="var(--text-color)" />
-		</button>
-	</div>
+	<!-- <div class="menuRight"> -->
+	<!-- 	<button on:click|preventDefault={reset} class="icon"> -->
+	<!-- 		<ResetIcon width="24px" height="24px" color="var(--text-color)" /> -->
+	<!-- 	</button> -->
+	<!-- </div> -->
 </div>
 
 <style lang="scss">
