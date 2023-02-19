@@ -23,6 +23,12 @@ export const Correctness = Object.freeze({
 	wrong: 'wrong'
 });
 
+const CorrectnessEmojis = Object.freeze({
+    correct: "🟩",
+    misplaced: "🟨",
+    wrong: "⬛",
+})
+
 export function defaultCorrectness() {
 	return 'empty';
 }
@@ -82,9 +88,6 @@ export interface Board {
 
 // TODO:
 // A: keep track of history
-// B: benchmark wether having 'active' row
-// and having tiles check if they are in active
-// row is faster
 export class GameState {
 	max_guesses: number = 6;
 	current_guess: string = '';
@@ -181,10 +184,10 @@ export class GameState {
 			} else if (valid) {
 				this.done = true;
 				this.won = all_correct;
+                console.log(this.emojiBoard());
 			}
 		}
 	}
-
 	async send_char(ch: string): GameState {
 		if (ch == 'enter') {
 			await this.check();
@@ -205,6 +208,24 @@ export class GameState {
 		}
 		return this;
 	}
+
+    // TODO: rename this to share or something generic 
+    // and share current guesses if not done
+    emojiBoard() {
+        const row = this.current.row;
+        const guesses = this.max_guesses;
+
+        let out = `Used ${row + 1} of ${guesses} guesses\n\n`
+        for (let i = 0; i <= row; i++) {
+            const row = this.board[i];
+            for (const tile of row) {
+                const emoji = CorrectnessEmojis[tile.correctness];
+                out += emoji;
+            }
+            out += "\n";
+        }
+        return out;
+    }
 }
 
 async function create_game_state(length) {
