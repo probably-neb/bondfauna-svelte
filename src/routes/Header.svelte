@@ -51,11 +51,18 @@
 		</select>
 	</div>
 	<div class="appHeader-title">Jordle</div>
-	<!-- <div class="menuRight"> -->
-	<!-- 	<button on:click|preventDefault={reset} class="icon"> -->
-	<!-- 		<ResetIcon width="24px" height="24px" color="var(--text-color)" /> -->
-	<!-- 	</button> -->
-	<!-- </div> -->
+	<div class="menuRight">
+        <!-- This is a hack to prevent reset from being called twice -->
+        {#if $game_state.current.row > 0 || $game_state.current.col > 0}
+		<button on:click|once={reset} class="icon">
+			<ResetIcon width="24px" height="24px" color="var(--text-color)" />
+		</button>
+        {:else}
+		<div class="icon">
+			<ResetIcon width="24px" height="24px" color="var(--text-color)" />
+		</div>
+        {/if}
+	</div>
 </div>
 
 <style lang="scss">
@@ -74,14 +81,14 @@
 			outline: 2px solid var(--highlight-color);
 		}
 
-		button.icon {
+		.icon {
 			background: none;
 			border: none;
 			cursor: pointer;
 			padding: 0 4px;
 		}
 
-		button.icon:last-child {
+		.icon:last-child {
 			padding-right: 0;
 		}
 	}
