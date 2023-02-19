@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { game_state } from './driver';
-    // TODO: make header folder either in routes or $lib
-    // and move icons there as well as implement 
-    // this: https://svelte.dev/repl/814c27da2e1344f9b4f205a93e02559f?version=3.38.1k
     // multilevel dropdown menu if needed
+    // https://svelte.dev/repl/814c27da2e1344f9b4f205a93e02559f?version=3.38.1k
 	import ResetIcon from '$lib/icons/reset.svelte';
     import PaintIcon from '$lib/icons/paintbrush.svelte';
     import LenIcon from '$lib/icons/lengths.svelte';
@@ -62,11 +60,11 @@
         <!-- This is a hack to prevent reset from being called twice -->
         {#if $game_state.current.row > 0 || $game_state.current.col > 0}
 		<button on:click|once={reset} class="icon">
-			<ResetIcon width="24px" height="24px" color="var(--text-color)" />
+			<ResetIcon/>
 		</button>
         {:else}
 		<div class="icon">
-			<ResetIcon width="24px" height="24px" color="var(--text-color)" />
+			<ResetIcon />
 		</div>
         {/if}
 	</div>

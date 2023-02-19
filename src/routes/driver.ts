@@ -179,7 +179,7 @@ export class GameState {
 			if (should_continue){
                 this.step_row();
             }
-            else {
+            else if (valid && on_last_guess) {
                 this.done = true;
                 this.won = all_correct;
             }
@@ -251,6 +251,9 @@ async function create_game_store() {
             // and not _that_ ugly way way to update
             // the game state with async
 
+            if (game_state.done) {
+                return
+            }
             await game_state.send_char(chr);
             set(game_state);
 		},
