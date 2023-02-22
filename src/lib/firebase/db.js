@@ -1,6 +1,8 @@
 import { getFirestore } from 'firebase/firestore';
 import { app } from './app.js';
+import { IPGEO_API_KEY } from '$env/static/private';
 import { doc, getDocs, getDoc, setDoc, where, query, collection, limit } from 'firebase/firestore';
+import { dev } from '$app/environment';
 // Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);
 
@@ -44,11 +46,16 @@ export async function isValidGuess(guess) {
 	return d.exists();
 }
 
-export async function requestUpdate(word, action) {
+async function getIpLocation(ip) {
+    return await fetch(`https://api.ipgeolocation.io/ipgeo?apiKey=${IPGEO_API_KEY}&ip=${ip}`).then(r=>r.json())
+}
+
+export async function requestUpdate(word, action, address) {
 	// TODO: store action in cookies
 	// and allow user to guess words in
 	// their cookies even if they're not
 	// in the db yet
+    const loc = await getIpLocation(address);
 	const strLen = '' + word.length;
 	// the record of this update
 	const record = collection(db, 'wordbank', strLen, 'updates');
@@ -56,7 +63,8 @@ export async function requestUpdate(word, action) {
 	const recordData = {
 		word,
 		action,
-		timestamp: new Date()
+		timestamp: new Date(),
+        location: loc,
 	};
 	// TODO: consider doing an update here
 	// and incrementing a counter
@@ -74,6 +82,9 @@ export async function requestUpdate(word, action) {
 	};
 	const updateTransaction = setDoc(doc(update, word), updateData);
 
-	await Promise.all([recordTransaction, updateTransaction]);
-	// console.log('requestUpdate', recordData);
+    if (!dev) {
+        await Promise.all([recordTransaction, updateTransaction]);
+    } else {
+        console.log('requestUpdate', {recordData,updateData});
+    }
 }
