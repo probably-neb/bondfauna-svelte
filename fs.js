@@ -16,6 +16,15 @@ const db = getFirestore(app);
 
 const fs = await import('firebase/firestore');
 
+const LENGTHS = [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+];
+
 const rand_id = (col) => fs.doc(col).id;
 
 async function getRand(col) {
@@ -75,25 +84,7 @@ async function writeAll(len, type, words) {
     for (let batch of batches) {
         let success = true;
         await batch.commit().catch(e => {success = e;});;
-        console.log('saved batch of',batch._mutations.length,'words... success:', success,'mutations:');
-    }
-}
-
-const LENGTHS = [
-    4,
-    5,
-    6,
-    7,
-    8,
-    9
-];
-
-async function getAllWordCounts() {
-    for (const len of LENGTHS) {
-        let wb = fs.collection(db,'wordbank');
-        let wb_len = fs.collection(fs.doc(wb, '' + len),'words');
-        const snap = await fs.getCountFromServer(wb_len);
-        console.log("there are",snap.data().count,len,"words")
+        console.log('saved batch of',batch._mutations.length,'words... success:', success);
     }
 }
 
@@ -123,19 +114,52 @@ async function getChunkWordCounts() {
         const chunk = path.split("/").pop()
         const day = chunk.split(".")[0];
         const [length,words] = readDayChunk(+day)
-        console.log(words.length,"words of length",+length, "in day",+day)
+        console.log(words.length,"words of length",+length, "in chunk",+day)
     }
 }
 
-const MODE = "allowed";
-// NOTE: to specify path can change this to map
-// and use for(const [k,v] of LENGTHS)
+async function getFirestoreAnswerCounts() {
+    for (const len of LENGTHS) {
+        let wb = fs.collection(db,'wordbank');
+        let wb_len = fs.collection(fs.doc(wb, '' + len),'words');
+        let q = fs.query(wb_len,fs.where('answer','==',true));
+        const snap = await fs.getCountFromServer(q);
+        console.log("there are",snap.data().count,len,"letter answers")
+    }
+}
+async function getFirestoreWordCounts() {
+    for (const len of LENGTHS) {
+        let wb = fs.collection(db,'wordbank');
+        let wb_len = fs.collection(fs.doc(wb, '' + len),'words');
+        const snap = await fs.getCountFromServer(wb_len);
+        console.log("there are",snap.data().count,len,"letter words")
+    }
+}
 
-const DAY = 4
-const [length,words] = readDayChunk(DAY);
+async function writeAllFromChunk(chunk, mode) {
+    const [length,words] = readDayChunk(chunk);
+    await writeAll(length, mode, words);
+}
 
-// await getChunkWordCounts()
-await writeAll(length, MODE, words);
+// const MODE = "allowed";
+// const DAY = 7
+
+const args = process.argv.slice(2);
+if (args[0] === "answers") {
+    await getFirestoreAnswerCounts()
+}
+else if (args[0] === "words") {
+    await getFirestoreWordCounts()
+}
+else if (args[0] === "chunks") {
+    await getChunkWordCounts()
+}
+else if (args[0] === "write") {
+    const day = +args[1];
+    const mode = args.length > 2 ? args[2] : "allowed";
+    await writeAllFromChunk(day, mode);
+    console.log("you should delete chunk:",day,"now");
+}
 console.log('done!');
 
 // TODO: when creating script to get all requested additions and do them
