@@ -16,46 +16,7 @@ const db = getFirestore(app);
 
 const fs = await import('firebase/firestore');
 
-
-function* chunks(arr) {
-    const n = 500;
-    for (let i = 0; i < arr.length; i += n) {
-        yield arr.slice(i, i + n);
-    }
-}
-
-let wb = fs.collection(db,'wordbank');
-
-function getWriteBatches(len, type) {
-    let wb_len = fs.collection(fs.doc(wb, '' + len),'words');
-    const rand_id = () => fs.doc(wb_len).id;
-
-    let words = require(`./src/lib/server/${type}/${len}.json`);
-    // const words = import(`./src/lib/server/answers/${len}.json`) assert {type: 'json'}
-    console.log("creating batches for", words.length,"words of length",len);
-    let batches = [];
-    const answer = type === "answers";
-    for (let chunk of chunks(words)) {
-        let batch = fs.writeBatch(db);
-        for (let i = 0; i < chunk.length; i++) {
-            const word = chunk[i];
-            const data = {
-                rand: rand_id(),
-            }
-            // do not set answer to false, because it will overwrite 
-            // the answers when updating the allowed
-            if (answer) data.answer = true;
-            batch.update(fs.doc(wb_len, word), data);
-        }
-        batches.push(batch);
-        // console.log('saving',batch)
-    }
-    return batches;
-}
-
-
 const rand_id = (col) => fs.doc(col).id;
-const words5 = fs.collection(db,'wordbank','5','words');
 
 async function getRand(col) {
     let rand = rand_id(col);
@@ -71,30 +32,110 @@ async function isValidGuess(guess, col) {
     return d.exists();
 }
 
-async function writeAll(lengths, type) {
-    for (let len of lengths) {
-        let batches = getWriteBatches(len, type);
-        for (let batch of batches) {
-            let success = true;
-            await batch.commit().catch(e => {success = e;});;
-            console.log('saved batch of',len,'words... success:', success,'mutations:',batch._mutations.length);
+
+function* chunks(arr) {
+    const n = 500;
+    for (let i = 0; i < arr.length; i += n) {
+        yield arr.slice(i, i + n);
+    }
+}
+
+
+
+function getWriteBatches(len, type, words) {
+    let wb = fs.collection(db,'wordbank');
+    let wb_len = fs.collection(fs.doc(wb, '' + len),'words');
+
+    console.log("generating batches for",words.length,"words of length", +len)
+    // const words = import(`./src/lib/server/answers/${len}.json`) assert {type: 'json'}
+    let batches = [];
+    const answer = type === "answers";
+    for (let chunk of chunks(words)) {
+        let batch = fs.writeBatch(db);
+        for (let i = 0; i < chunk.length; i++) {
+            const word = chunk[i];
+            const data = {
+                rand: rand_id(wb_len),
+                answer,
+            }
+            // do not set answer to false, because it will overwrite 
+            // the answers when updating the allowed
+            // if (answer) data.answer = true;
+            batch.set(fs.doc(wb_len, word), data);
         }
+        batches.push(batch);
+        // console.log('saving',batch)
+    }
+    return batches;
+}
+
+
+async function writeAll(len, type, words) {
+    let batches = getWriteBatches(len, type, words);
+    for (let batch of batches) {
+        let success = true;
+        await batch.commit().catch(e => {success = e;});;
+        console.log('saved batch of',batch._mutations.length,'words... success:', success,'mutations:');
+    }
+}
+
+const LENGTHS = [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+];
+
+async function getAllWordCounts() {
+    for (const len of LENGTHS) {
+        let wb = fs.collection(db,'wordbank');
+        let wb_len = fs.collection(fs.doc(wb, '' + len),'words');
+        const snap = await fs.getCountFromServer(wb_len);
+        console.log("there are",snap.data().count,len,"words")
+    }
+}
+
+function readDayChunk(day) {
+    const path = `./data/chunks/${day}.json`;
+    const data = require(path);
+    const [length,words] = Object.entries(data)[0];
+    return [length,words];
+}
+
+async function* getFiles(dir) {
+    const { resolve } = require('path');
+    const { readdir } = require('fs').promises;
+
+    const dirents = await readdir(dir, { withFileTypes: true });
+    for (const dirent of dirents) {
+        const res = resolve(dir, dirent.name);
+        if (dirent.isDirectory()) {
+            yield* getFiles(res);
+        } else {
+            yield res;
+        }
+    }
+}
+async function getChunkWordCounts() {
+    for await (const path of getFiles('./data/chunks/')) {
+        const chunk = path.split("/").pop()
+        const day = chunk.split(".")[0];
+        const [length,words] = readDayChunk(+day)
+        console.log(words.length,"words of length",+length, "in day",+day)
     }
 }
 
 const MODE = "allowed";
 // NOTE: to specify path can change this to map
 // and use for(const [k,v] of LENGTHS)
-const LENGTHS = [
-    // 4,
-    5,
-    // 6,
-    // 7,
-    // 8,
-    // 9
-];
 
-await writeAll(LENGTHS, MODE);
+const DAY = 4
+const [length,words] = readDayChunk(DAY);
+
+// await getChunkWordCounts()
+await writeAll(length, MODE, words);
 console.log('done!');
 
 // TODO: when creating script to get all requested additions and do them
