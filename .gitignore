@@ -17,7 +17,6 @@ data/ngrams
 data/possible_answers.txt
 .vercel
 firestore.json
-fs.js
 data/chunks
 data/wordbank
 data
